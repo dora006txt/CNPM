@@ -1,4 +1,4 @@
-package ptithcm.edu.pharmacy.config;
+package ptithcm.edu.pharmacy.config; // Adjust package name if needed
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -6,45 +6,59 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder; // Import BCryptPasswordEncoder
-import org.springframework.security.crypto.password.PasswordEncoder; // Import PasswordEncoder
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer; // For CSRF disabling
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import ptithcm.edu.pharmacy.security.JwtAuthenticationFilter;
+import org.springframework.beans.factory.annotation.Autowired;
+// Import other necessary classes like your JWT filter, AuthenticationProvider, etc.
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-    // Define the SecurityFilterChain bean (as before)
+    @Autowired
+    private JwtAuthenticationFilter jwtAuthFilter;
+
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            // Authorize HTTP requests
-            .authorizeHttpRequests(authz -> authz
-                // Permit all requests starting with /api/
-                .requestMatchers("/api/**").permitAll()
-                // Any other request needs to be authenticated (optional, good practice)
+            // Disable CSRF protection - common for stateless REST APIs
+            .csrf(AbstractHttpConfigurer::disable)
+            .authorizeHttpRequests(auth -> auth
+                // Allow public access to authentication endpoints
+                .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/forgot-password").permitAll()
+                // Allow public access to other endpoints like categories (adjust as needed)
+                .requestMatchers("/api/categories/**").permitAll()
+                // Allow public access to product endpoints
+                .requestMatchers("/api/products/**").permitAll()
+                // Configure other endpoint security (e.g., require authentication)
+                // .requestMatchers("/api/orders/**").authenticated()
+                // .requestMatchers("/api/admin/**").hasRole("ADMIN") // Example role-based access
+                // Secure all other requests by default
                 .anyRequest().authenticated()
             )
-            // Disable CSRF protection - Common for stateless APIs (like REST APIs often are)
-            // Re-evaluate if your API uses sessions or requires CSRF protection
-            .csrf(AbstractHttpConfigurer::disable);
-            // You might add other configurations like formLogin, httpBasic, etc. if needed later
+            // Configure session management to be stateless - common for APIs using tokens
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            // Add your JWT filter before the standard UsernamePasswordAuthenticationFilter
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
+        // Add other configurations like exception handling, authentication provider, etc.
 
         return http.build();
     }
 
-    // Expose AuthenticationManager as a Bean (as before)
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        // Use a strong password encoder
+        return new BCryptPasswordEncoder();
+    }
+
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
-    }
-
-    // --- Define a PasswordEncoder Bean ---
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        // Use BCrypt for strong, salted password hashing
-        return new BCryptPasswordEncoder();
     }
 }

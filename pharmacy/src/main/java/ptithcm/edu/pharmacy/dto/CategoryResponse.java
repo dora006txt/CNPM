@@ -1,12 +1,14 @@
 package ptithcm.edu.pharmacy.dto;
 
 import lombok.Builder;
-import lombok.Getter; // <-- Ensure this (or @Data) is present
+import lombok.Getter;
 
-@Getter // <-- Add this if missing
+@Getter
 @Builder
 public class CategoryResponse {
     private Integer id;
     private String name;
     private String slug;
+    private String description;
+    private String imageUrl;    // Changed from image_url to imageUrl
 }

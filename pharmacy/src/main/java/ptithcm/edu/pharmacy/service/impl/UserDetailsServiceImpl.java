@@ -27,9 +27,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("User Not Found with phone number: " + phoneNumber));
 
         // Explicitly initialize the roles collection while the session is active
-        Hibernate.initialize(user.getRoles()); 
+        Hibernate.initialize(user.getRoles());
         // Alternatively, you could trigger initialization by accessing the collection:
-        // user.getRoles().size(); 
+        // user.getRoles().size();
 
         // Map roles to Spring Security GrantedAuthority objects
         List<SimpleGrantedAuthority> authorities = user.getRoles().stream()
@@ -37,9 +37,14 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 .collect(Collectors.toList());
 
         // Return the UserDetails object expected by Spring Security
+        // Include account status checks (enabled, etc.) based on your User entity
         return new org.springframework.security.core.userdetails.User(
                 user.getPhoneNumber(), // Principal (username)
                 user.getPasswordHash(), // Password
+                user.getIsActive(), // enabled <--- Add this
+                true, // accountNonExpired
+                true, // credentialsNonExpired
+                true, // accountNonLocked
                 authorities); // Authorities (roles)
     }
 }

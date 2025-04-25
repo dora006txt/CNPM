@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data; // Or add getters/setters manually
 
 @Entity
-@Table(name = "manufacturers")
+@Table(name = "Manufacturers")
 @Data // Lombok annotation for getters, setters, etc.
 public class Manufacturer {
 

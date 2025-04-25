@@ -1,5 +1,6 @@
 package ptithcm.edu.pharmacy.config; // Adjust package name if needed
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -13,7 +14,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import ptithcm.edu.pharmacy.security.JwtAuthenticationFilter;
-import org.springframework.beans.factory.annotation.Autowired;
 // Import other necessary classes like your JWT filter, AuthenticationProvider, etc.
 
 @Configuration
@@ -29,12 +29,12 @@ public class SecurityConfig {
             // Disable CSRF protection - common for stateless REST APIs
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth
+                // Allow public access to static resources (homepage, css, js)
+                .requestMatchers("/", "/index.html", "/style.css", "/script.js").permitAll()
                 // Allow public access to authentication endpoints
                 .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/forgot-password").permitAll()
-                // Allow public access to other endpoints like categories (adjust as needed)
-                .requestMatchers("/api/categories/**").permitAll()
-                // Allow public access to product endpoints
-                .requestMatchers("/api/products/**").permitAll()
+                // Allow public access to other endpoints like categories and products (adjust as needed)
+                .requestMatchers("/api/categories/**", "/api/products/**").permitAll()
                 // Configure other endpoint security (e.g., require authentication)
                 // .requestMatchers("/api/orders/**").authenticated()
                 // .requestMatchers("/api/admin/**").hasRole("ADMIN") // Example role-based access

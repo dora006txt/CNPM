@@ -14,7 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import ptithcm.edu.pharmacy.security.JwtAuthenticationFilter;
-// Import other necessary classes like your JWT filter, AuthenticationProvider, etc.
+import org.springframework.http.HttpMethod; // Import HttpMethod
 
 @Configuration
 @EnableWebSecurity
@@ -33,8 +33,17 @@ public class SecurityConfig {
                 .requestMatchers("/", "/index.html", "/style.css", "/script.js").permitAll()
                 // Allow public access to authentication endpoints
                 .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/forgot-password").permitAll()
-                // Allow public access to other endpoints like categories and products (adjust as needed)
-                .requestMatchers("/api/categories/**", "/api/products/**").permitAll()
+                // Allow public access to view categories and products (adjust as needed)
+                .requestMatchers(HttpMethod.GET, "/api/categories/**", "/api/products/**").permitAll() // GET is public
+                // Require ADMIN authority for managing categories/products (POST, PUT, DELETE)
+                .requestMatchers(HttpMethod.POST, "/api/categories/**", "/api/products/**").hasAuthority("ADMIN") // Requires ADMIN
+                .requestMatchers(HttpMethod.PUT, "/api/categories/**", "/api/products/**").hasAuthority("ADMIN") // Requires ADMIN
+                .requestMatchers(HttpMethod.DELETE, "/api/categories/**", "/api/products/**").hasAuthority("ADMIN") // Requires ADMIN
+
+                // Secure user profile and address endpoints
+                .requestMatchers("/api/users/me").authenticated()
+                .requestMatchers("/api/addresses/**").authenticated() // Secure all address endpoints
+
                 // Configure other endpoint security (e.g., require authentication)
                 // .requestMatchers("/api/orders/**").authenticated()
                 // .requestMatchers("/api/admin/**").hasRole("ADMIN") // Example role-based access

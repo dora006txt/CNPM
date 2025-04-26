@@ -14,10 +14,16 @@ import org.springframework.transaction.annotation.Transactional;
 import ptithcm.edu.pharmacy.dto.LoginRequest;
 import ptithcm.edu.pharmacy.dto.LoginResponse;
 import ptithcm.edu.pharmacy.dto.RegisterRequest;
-import ptithcm.edu.pharmacy.entity.Role;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
+import ptithcm.edu.pharmacy.dto.UpdateUserRequest;
+import ptithcm.edu.pharmacy.dto.UserResponse;
+import ptithcm.edu.pharmacy.entity.Role; // Ensure Role is imported if not already
+import java.util.Set; // Import Set
+import java.util.stream.Collectors; // Import Collectors
 import ptithcm.edu.pharmacy.entity.User; // Assuming User entity exists
 import ptithcm.edu.pharmacy.entity.UserRole;
-import ptithcm.edu.pharmacy.entity.UserRoleId;
+import ptithcm.edu.pharmacy.entity.UserRoleId; 
 import ptithcm.edu.pharmacy.repository.UserRepository; // Assuming UserRepository exists
 import ptithcm.edu.pharmacy.repository.RoleRepository; // Import RoleRepository
 import ptithcm.edu.pharmacy.repository.UserRoleRepository; // Import UserRoleRepository
@@ -225,9 +231,74 @@ public class UserService { // Or your relevant service name
     }
     // --- End Change Password Method ---
     
-    // Add this method to get user by phone number
+    // Add this method to get user by phone number (if not already present)
     public User getUserByPhoneNumber(String phoneNumber) {
         return userRepository.findByPhoneNumber(phoneNumber)
-                .orElse(null);
+                .orElse(null); // Or throw an exception if preferred
     }
+
+    // --- New Method: Update User Profile ---
+    @Transactional
+    public User updateUserProfile(Integer userId, UpdateUserRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with id: " + userId));
+
+        // Update fields from request if they are provided
+        if (request.getFullName() != null) {
+            user.setFullName(request.getFullName());
+        }
+        if (request.getEmail() != null) {
+            // Add email uniqueness check
+            if (userRepository.existsByEmail(request.getEmail())) {
+                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email already in use");
+            }
+            user.setEmail(request.getEmail());
+        }
+        if (request.getDateOfBirth() != null) {
+            user.setDateOfBirth(request.getDateOfBirth());
+        }
+        if (request.getGender() != null) {
+            user.setGender(request.getGender());
+        }
+        // Add the address update logic
+        if (request.getAddress() != null) { // Check if address is provided in the request
+             user.setAddress(request.getAddress());
+        }
+
+        user.setUpdatedAt(LocalDateTime.now()); // Update timestamp
+
+        return userRepository.save(user);
+    }
+    // --- End Update User Profile ---
+
+
+    // --- Helper Method: Map User to UserResponse DTO ---
+    // Consider making this public or moving it to a dedicated mapper class if used elsewhere
+    private UserResponse mapUserToResponse(User user) {
+        if (user == null) {
+            return null;
+        }
+        Set<String> roleNames = user.getRoles().stream()
+                .map(Role::getRoleName) // Use getRoleName() based on Role entity
+                .collect(Collectors.toSet());
+
+        return UserResponse.builder()
+                .id(user.getUserId())
+                .phoneNumber(user.getPhoneNumber())
+                .fullName(user.getFullName())
+                .email(user.getEmail())
+                .dateOfBirth(user.getDateOfBirth())
+                .gender(user.getGender())
+                .address(user.getAddress()) // Add mapping for address
+                .isActive(user.getIsActive())
+                .createdAt(user.getCreatedAt())
+                .updatedAt(user.getUpdatedAt())
+                .roles(roleNames)
+                // Add other fields from UserResponse DTO if necessary (e.g., lastLogin)
+                // .lastLogin(user.getLastLogin())
+                .build();
+    }
+     // --- End Helper Method ---
+
+    // ... getUserByPhoneNumber method ...
 }

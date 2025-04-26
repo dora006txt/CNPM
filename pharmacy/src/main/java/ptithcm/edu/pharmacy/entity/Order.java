@@ -29,14 +29,16 @@ public class Order {
     @Column(name = "order_date")
     private LocalDateTime orderDate;
 
-    @ManyToOne
-    @JoinColumn(name = "shipping_address_id", nullable = false)
-    private Address shippingAddress;
-
-    @ManyToOne
-    @JoinColumn(name = "billing_address_id")
-    private Address billingAddress;
-
+    // Remove these lines:
+    // @ManyToOne
+    // @JoinColumn(name = "shipping_address_id", nullable = false)
+    // private Address shippingAddress;
+    
+    // Remove these lines:
+    // @ManyToOne
+    // @JoinColumn(name = "billing_address_id")
+    // private Address billingAddress;
+    
     @ManyToOne
     @JoinColumn(name = "shipping_method_id")
     private ShippingMethod shippingMethod;

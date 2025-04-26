@@ -2,6 +2,7 @@ package ptithcm.edu.pharmacy.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import java.time.LocalDate; // Import LocalDate
 import java.time.LocalDateTime;
 import java.util.Set;
 
@@ -26,12 +27,17 @@ public class User {
     @Column(unique = true)
     private String email;
 
-    @ManyToOne
-    @JoinColumn(name = "default_address_id")
-    private Address defaultAddress;
+    @Column(name = "date_of_birth") // Add mapping for date of birth
+    private LocalDate dateOfBirth;
+
+    @Column(name = "gender") // Add mapping for gender
+    private String gender; // Using String for simplicity, consider Enum for fixed values
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    @Column(name = "address")
+    private String address; // Changed from Address to address
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;

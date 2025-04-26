@@ -182,7 +182,7 @@ CREATE TABLE `Categories` (
 
 LOCK TABLES `Categories` WRITE;
 /*!40000 ALTER TABLE `Categories` DISABLE KEYS */;
-INSERT INTO `Categories` VALUES (1,'Vitaminss & Supplements','Products related to vitamins and dietary supplements.',NULL,'vitamins-supplements','http://example.com/images/vitamin.jpg','2025-04-17 14:11:41','2025-04-22 09:03:53'),(3,'Pain Relievers','Fast-acting pain relief for headaches, muscle aches, and more.',NULL,'pain-relievers','http://example.com/images/pain-relief.jpg','2025-04-17 14:35:46','2025-04-17 14:35:46'),(4,'Antibiotics','Prescription antibiotics for bacterial infections.',NULL,'antibiotics','http://example.com/images/antibiotics.jpg','2025-04-17 14:35:56','2025-04-17 14:35:56'),(5,'Allergy Medicine','Relief for seasonal allergies, sneezing, and itchy eyes.',NULL,'allergy-medicine','http://example.com/images/allergy-relief.jpg','2025-04-17 14:36:04','2025-04-17 14:36:04'),(6,'Digestive Health','Medications for heartburn, indigestion, and stomach issues.',NULL,'digestive-health','http://example.com/images/digestive-medicine.jpg','2025-04-17 14:36:13','2025-04-17 14:36:13');
+INSERT INTO `Categories` VALUES (3,'Pain Relievers','Fast-acting pain relief for headaches, muscle aches, and more.',NULL,'pain-relievers','http://example.com/images/pain-relief.jpg','2025-04-17 14:35:46','2025-04-17 14:35:46'),(4,'Antibiotics','Prescription antibiotics for bacterial infections.',NULL,'antibiotics','http://example.com/images/antibiotics.jpg','2025-04-17 14:35:56','2025-04-17 14:35:56'),(5,'Allergy Medicine','Relief for seasonal allergies, sneezing, and itchy eyes.',NULL,'allergy-medicine','http://example.com/images/allergy-relief.jpg','2025-04-17 14:36:04','2025-04-17 14:36:04'),(6,'Digestive Health','Medications for heartburn, indigestion, and stomach issues.',NULL,'digestive-health','http://example.com/images/digestive-medicine.jpg','2025-04-17 14:36:13','2025-04-17 14:36:13');
 /*!40000 ALTER TABLE `Categories` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -251,7 +251,7 @@ CREATE TABLE `Countries` (
   UNIQUE KEY `UKlx3r8cp4g7xkaqximbtxum74r` (`country_name`),
   UNIQUE KEY `UK4y6twd7e6y4yfhs1ghu84eglm` (`country_code`),
   UNIQUE KEY `UK5y4r7j3ksmtkjsoq0ibx6arrc` (`country_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Danh mục các quốc gia';
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Danh mục các quốc gia';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -260,7 +260,7 @@ CREATE TABLE `Countries` (
 
 LOCK TABLES `Countries` WRITE;
 /*!40000 ALTER TABLE `Countries` DISABLE KEYS */;
-INSERT INTO `Countries` VALUES (1,'VN','Viet Nam'),(2,'US','Hoa Kỳ'),(3,'TW','Đài Loan'),(4,'TH','Thái Lan'),(5,'ES','Tây Ban Nha'),(6,'SE','Thuỵ Điển'),(7,'CH','Thuỵ Sĩ');
+INSERT INTO `Countries` VALUES (1,'VN','Viet Nam'),(2,'US','Hoa Kỳ'),(3,'TW','Đài Loan'),(4,'TH','Thái Lan'),(5,'ES','Tây Ban Nha'),(6,'SE','Thuỵ Điển'),(7,'CH','Thuỵ Sĩ'),(8,'CA','Canada');
 /*!40000 ALTER TABLE `Countries` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -684,7 +684,7 @@ CREATE TABLE `Products` (
 
 LOCK TABLES `Products` WRITE;
 /*!40000 ALTER TABLE `Products` DISABLE KEYS */;
-INSERT INTO `Products` VALUES (1,'Updated Paracetamol 500mg','UPDATED-PARA-500','An updated description for pain relief and fever reduction.','Paracetamol 500mg, Updated Excipients','Take 1-2 tablets every 4-6 hours as needed. Do not exceed 8 tablets in 24 hours.','Known hypersensitivity to paracetamol.','Rarely, skin rashes.','Store below 25°C.','Blister pack of 20 tablets (Updated)','Tablet','http://example.com/updated_image.jpg',1,1,1,0,'ACTIVE','updated-paracetamol-500mg',0.00,0,'2025-04-17 16:02:12','2025-04-24 17:46:56',1),(4,'Ibuprofen 400mg','IBU-400-30TAB','Thuốc giảm đau, kháng viêm không steroid, điều trị đau nhức từ nhẹ đến trung bình','Ibuprofen 400mg','Uống 1 viên mỗi 6-8 giờ khi cần, tối đa 1200mg/ngày. Uống với nước sau ăn','Loét dạ dày tiến triển, suy thận nặng, quá mẫn với NSAID','Đau bụng, buồn nôn, chóng mặt, tăng nguy cơ xuất huyết tiêu hóa','Nhiệt độ dưới 30°C, tránh ẩm','Vỉ 10 viên x 3 vỉ','viên','https://example.com/images/ibuprofen.jpg',4,9,10,0,'ACTIVE','ibuprofen-400mg',0.00,0,'2025-04-17 16:06:43','2025-04-17 16:06:43',1),(5,'Losartan 50mg','LOS-50-28TAB','Thuốc ức chế thụ thể angiotensin II, điều trị tăng huyết áp và bảo vệ thận ở bệnh nhân đái tháo đường','Losartan potassium 50mg','1 viên/ngày, uống vào buổi sáng. Có thể điều chỉnh liều theo chỉ định bác sĩ','Quá mẫn với Losartan, phụ nữ có thai','Chóng mặt, tăng kali máu, ho khan','Nhiệt độ phòng, tránh ánh sáng','Hộp 28 viên nén','viên','https://example.com/images/losartan.jpg',6,5,3,1,'DISCONTINUED','losartan-50mg',0.00,0,'2025-04-17 17:16:41','2025-04-17 17:16:41',1),(6,'Povidone Iodine 10%','PVI-10-500ML','Dung dịch sát khuẩn ngoài da, vết thương hở và chuẩn bị phẫu thuật','Povidone Iodine 10% w/v','Thấm dung dịch vào gạc vô trùng, lau nhẹ lên vùng da cần sát khuẩn. Không dùng cho vết thương sâu','Dị ứng với iod, bệnh tuyến giáp, phụ nữ có thai','Kích ứng da nhẹ, nhuộm màu da tạm thời','Đậy kín nắp, nhiệt độ dưới 25°C','Chai 500ml','chai','https://example.com/images/povidone-iodine.jpg',5,6,6,0,'ACTIVE','povidone-iodine-10',0.00,0,'2025-04-17 17:18:02','2025-04-17 17:18:02',1);
+INSERT INTO `Products` VALUES (5,'Losartan 50mg','LOS-50-28TAB','Thuốc ức chế thụ thể angiotensin II, điều trị tăng huyết áp và bảo vệ thận ở bệnh nhân đái tháo đường','Losartan potassium 50mg','1 viên/ngày, uống vào buổi sáng. Có thể điều chỉnh liều theo chỉ định bác sĩ','Quá mẫn với Losartan, phụ nữ có thai','Chóng mặt, tăng kali máu, ho khan','Nhiệt độ phòng, tránh ánh sáng','Hộp 28 viên nén','viên','https://example.com/images/losartan.jpg',6,5,3,1,'DISCONTINUED','losartan-50mg',0.00,0,'2025-04-17 17:16:41','2025-04-17 17:16:41',1),(6,'Povidone Iodine 10%','PVI-10-500ML','Dung dịch sát khuẩn ngoài da, vết thương hở và chuẩn bị phẫu thuật','Povidone Iodine 10% w/v','Thấm dung dịch vào gạc vô trùng, lau nhẹ lên vùng da cần sát khuẩn. Không dùng cho vết thương sâu','Dị ứng với iod, bệnh tuyến giáp, phụ nữ có thai','Kích ứng da nhẹ, nhuộm màu da tạm thời','Đậy kín nắp, nhiệt độ dưới 25°C','Chai 500ml','chai','https://example.com/images/povidone-iodine.jpg',5,6,6,0,'ACTIVE','povidone-iodine-10',0.00,0,'2025-04-17 17:18:02','2025-04-17 17:18:02',1);
 /*!40000 ALTER TABLE `Products` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -930,7 +930,7 @@ CREATE TABLE `Roles` (
   UNIQUE KEY `role_name` (`role_name`),
   UNIQUE KEY `UK716hgxp60ym1lifrdgp67xt5k` (`role_name`),
   UNIQUE KEY `UKkq0q6fk0168lj68ffgakdjsat` (`role_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Lưu trữ các vai trò người dùng trong hệ thống';
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Lưu trữ các vai trò người dùng trong hệ thống';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -939,7 +939,7 @@ CREATE TABLE `Roles` (
 
 LOCK TABLES `Roles` WRITE;
 /*!40000 ALTER TABLE `Roles` DISABLE KEYS */;
-INSERT INTO `Roles` VALUES (1,'CUSTOMER','Regular customer role');
+INSERT INTO `Roles` VALUES (1,'CUSTOMER','Khách hàng đăng kí tài khoản'),(2,'ADMIN','Quản trị hệ thống');
 /*!40000 ALTER TABLE `Roles` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1141,7 +1141,7 @@ CREATE TABLE `User_Roles` (
 
 LOCK TABLES `User_Roles` WRITE;
 /*!40000 ALTER TABLE `User_Roles` DISABLE KEYS */;
-INSERT INTO `User_Roles` VALUES (1,1),(2,1),(3,1),(4,1),(5,1),(6,1),(7,1),(8,1),(9,1);
+INSERT INTO `User_Roles` VALUES (1,1),(2,1),(3,1),(4,1),(5,1),(6,1),(7,1),(9,1),(8,2);
 /*!40000 ALTER TABLE `User_Roles` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1181,7 +1181,7 @@ CREATE TABLE `Users` (
 
 LOCK TABLES `Users` WRITE;
 /*!40000 ALTER TABLE `Users` DISABLE KEYS */;
-INSERT INTO `Users` VALUES (1,'0362522421','$2a$10$W..XDUFknq457.9GXxmap.75X1pLhVW9RLVcFIH6Ur/Cv2wnJVQtW','Cao Thi Thu','thuthi732@gmail.com','2025-04-14 21:23:25','2025-04-14 21:23:25',1,'2025-04-22 06:55:12',NULL,NULL,NULL),(2,'0352446599','$2a$10$IdV37DVxKAvrDzF7eKH7kOa1L5Qql5x//w4qMUhuJ2it7t/Uehip2','Do Van Tu','0l3vantuu7l0@gmail.com','2025-04-14 21:23:58','2025-04-19 02:00:35',1,'2025-04-18 18:58:16',NULL,NULL,NULL),(3,'0987351477','$2a$10$t1MT2zPj6sf/I6Zs.PAbV.VkR2CC0d9YnHK87mBkm6KGUecf6he8S','Do Van Thanh','vanthanh732@gmail.com','2025-04-14 21:24:14','2025-04-14 21:24:14',1,NULL,NULL,NULL,NULL),(4,'0989771499','$2a$10$GJIRYAv0l2JLZ/6TUbdD/e1KzL9OrC7l8iIO.r1Lp8BXWNao1Rx7y','Hoang Thi Tham','thamhoang732@gmail.com','2025-04-14 21:24:46','2025-04-14 21:24:46',1,'2025-04-22 06:47:26',NULL,NULL,NULL),(5,'0345001645','$2a$10$01l/M4vXIT2whjjPb.JkI..aDD2ci8THiLXbTYTZLerGRHLyYxzV6','Hang Gia Thinh','thinhgia@gmail.com','2025-04-16 23:20:18','2025-04-16 23:20:18',1,NULL,NULL,NULL,NULL),(6,'0345004355','$2a$10$kULDmlQZdBsuAf4WoIO3TuZhPJcCNx2p9vQmoD83E.aaCuzHnHPLW','Nguyen Hoang Trung','trung324312@gmail.com','2025-04-16 23:33:32','2025-04-16 23:33:32',1,'2025-04-22 06:45:34',NULL,NULL,NULL),(7,'0933345345','$2a$10$nnRxbsLqRBK3XoijC2kIzeQcaKs4ruDrhAsvPGUuEqyuikqDoNTWm','Do Ra DO','dorado732006@gmail.com','2025-04-18 19:20:02','2025-04-22 08:55:45',1,'2025-04-22 08:55:56',NULL,NULL,NULL),(8,'0987654321','$2a$10$aquUhUfBGo4.TLpgKgOEqeRBji54kB22fIn5v3/cjBjFvK8M/3ciG','Đỗ Văn Tú','0l3vantu7l0@gmail.com','2025-04-18 20:02:20','2025-04-25 13:49:28',1,'2025-04-25 13:39:42','2004-03-07','male',NULL),(9,'0987654322','$2a$10$2LcfxQhrnQiI1wdTcLB8g.BiXGPctArEBIXtmQw7Aq/P9JIh4nBc6','Đỗ Văn Hưng','hungvan2354@gmail.com','2025-04-22 06:55:55','2025-04-22 06:55:55',1,'2025-04-22 08:03:21',NULL,NULL,NULL);
+INSERT INTO `Users` VALUES (1,'0362522421','$2a$10$W..XDUFknq457.9GXxmap.75X1pLhVW9RLVcFIH6Ur/Cv2wnJVQtW','Cao Thi Thu','thuthi732@gmail.com','2025-04-14 21:23:25','2025-04-14 21:23:25',1,'2025-04-22 06:55:12',NULL,NULL,NULL),(2,'0352446599','$2a$10$IdV37DVxKAvrDzF7eKH7kOa1L5Qql5x//w4qMUhuJ2it7t/Uehip2','Do Van Tu','0l3vantuu7l0@gmail.com','2025-04-14 21:23:58','2025-04-19 02:00:35',1,'2025-04-18 18:58:16',NULL,NULL,NULL),(3,'0987351477','$2a$10$t1MT2zPj6sf/I6Zs.PAbV.VkR2CC0d9YnHK87mBkm6KGUecf6he8S','Do Van Thanh','vanthanh732@gmail.com','2025-04-14 21:24:14','2025-04-14 21:24:14',1,NULL,NULL,NULL,NULL),(4,'0989771499','$2a$10$GJIRYAv0l2JLZ/6TUbdD/e1KzL9OrC7l8iIO.r1Lp8BXWNao1Rx7y','Hoang Thi Tham','thamhoang732@gmail.com','2025-04-14 21:24:46','2025-04-14 21:24:46',1,'2025-04-22 06:47:26',NULL,NULL,NULL),(5,'0345001645','$2a$10$01l/M4vXIT2whjjPb.JkI..aDD2ci8THiLXbTYTZLerGRHLyYxzV6','Hang Gia Thinh','thinhgia@gmail.com','2025-04-16 23:20:18','2025-04-16 23:20:18',1,NULL,NULL,NULL,NULL),(6,'0345004355','$2a$10$kULDmlQZdBsuAf4WoIO3TuZhPJcCNx2p9vQmoD83E.aaCuzHnHPLW','Nguyen Hoang Trung','trung324312@gmail.com','2025-04-16 23:33:32','2025-04-16 23:33:32',1,'2025-04-22 06:45:34',NULL,NULL,NULL),(7,'0933345345','$2a$10$nnRxbsLqRBK3XoijC2kIzeQcaKs4ruDrhAsvPGUuEqyuikqDoNTWm','Do Ra DO','dorado732006@gmail.com','2025-04-18 19:20:02','2025-04-22 08:55:45',1,'2025-04-22 08:55:56',NULL,NULL,NULL),(8,'0987654321','$2a$10$aquUhUfBGo4.TLpgKgOEqeRBji54kB22fIn5v3/cjBjFvK8M/3ciG','Đỗ Văn Tú','0l3vantu7l0@gmail.com','2025-04-18 20:02:20','2025-04-25 15:06:01',1,'2025-04-25 17:44:44','2004-03-07','male','đường NK2, khu phố 3A, phường Thới Hoà, thị xã Bến Cát, tỉnh Bình Dương'),(9,'0987654322','$2a$10$2LcfxQhrnQiI1wdTcLB8g.BiXGPctArEBIXtmQw7Aq/P9JIh4nBc6','Đỗ Văn Hưng','hungvan2354@gmail.com','2025-04-22 06:55:55','2025-04-22 06:55:55',1,'2025-04-22 08:03:21',NULL,NULL,NULL);
 /*!40000 ALTER TABLE `Users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -1194,4 +1194,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-04-26  4:30:53
+-- Dump completed on 2025-04-26  8:19:22

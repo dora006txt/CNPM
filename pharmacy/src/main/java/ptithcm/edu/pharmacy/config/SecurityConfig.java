@@ -68,6 +68,9 @@ public class SecurityConfig {
                 .requestMatchers("/api/users/me").authenticated()
                 .requestMatchers("/api/addresses/**").authenticated()
 
+                // --- Cart Management ---
+                .requestMatchers("/api/v1/cart/**").authenticated() // Secure all cart operations
+
                 // Secure all other requests
                 .anyRequest().authenticated()
             )

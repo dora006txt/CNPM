@@ -59,7 +59,7 @@ public class ProductController {
     public ResponseEntity<ProductResponse> getProductById(@PathVariable Integer id) {
         log.info("Received request to get product by ID: {}", id);
         return productService.findProductById(id)
-                .map(this::mapProductToResponseDto)
+                .map(this::mapProductToResponseDto) // Maps Product entity to ProductResponse DTO
                 .map(responseDto -> {
                     log.info("Product found with ID: {}", id);
                     return ResponseEntity.ok(responseDto);
@@ -109,7 +109,7 @@ public class ProductController {
         ManufacturerResponse manufacturerDto = product.getManufacturer() != null ? mapManufacturerToResponseDto(product.getManufacturer()) : null;
         CategoryResponse categoryDto = product.getCategory() != null ? mapCategoryToResponseDto(product.getCategory()) : null;
         BrandResponse brandDto = product.getBrand() != null ? mapBrandToResponseDto(product.getBrand()) : null;
-
+    
         return ProductResponse.builder()
                 .id(product.getId())
                 .name(product.getName())

@@ -7,14 +7,14 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer; // For CSRF disabling
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import ptithcm.edu.pharmacy.security.JwtAuthenticationFilter;
-import org.springframework.http.HttpMethod; // Import HttpMethod
+import org.springframework.http.HttpMethod;
 
 @Configuration
 @EnableWebSecurity
@@ -26,43 +26,59 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            // Disable CSRF protection - common for stateless REST APIs
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth
-                // Allow public access to static resources (homepage, css, js)
-                .requestMatchers("/", "/index.html", "/style.css", "/script.js").permitAll()
-                // Allow public access to authentication endpoints
-                .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/forgot-password").permitAll()
-                // Allow public access to view categories and products (adjust as needed)
-                .requestMatchers(HttpMethod.GET, "/api/categories/**", "/api/products/**").permitAll() // GET is public
-                // Require ADMIN authority for managing categories/products (POST, PUT, DELETE)
-                .requestMatchers(HttpMethod.POST, "/api/categories/**", "/api/products/**").hasAuthority("ADMIN") // Requires ADMIN
-                .requestMatchers(HttpMethod.PUT, "/api/categories/**", "/api/products/**").hasAuthority("ADMIN") // Requires ADMIN
-                .requestMatchers(HttpMethod.DELETE, "/api/categories/**", "/api/products/**").hasAuthority("ADMIN") // Requires ADMIN
+                // Permit public GET access to specific resources
+                .requestMatchers(HttpMethod.GET,
+                    "/", "/index.html", "/style.css", "/script.js", // Static content
+                    // "/api/auth/login", // Moved below
+                    "/api/auth/register", "/api/auth/forgot-password", // Auth endpoints (GET for potential pages)
+                    "/api/categories/**", // View categories
+                    "/api/products/**", // View products
+                    "/api/v1/branches", "/api/v1/branches/**", // View branches
+                    "/api/v1/inventory/branch/{branchId}/products/display", // View product list display per branch
+                    "/api/v1/inventory/branch/{branchId}/product/{productId}/display" // View single product display
+                ).permitAll()
+                // Permit public POST access for authentication
+                .requestMatchers(HttpMethod.POST,
+                    "/api/auth/login", // <-- Allow POST for login
+                    "/api/auth/register" // Allow POST for registration
+                ).permitAll()
 
-                // Secure user profile and address endpoints
+                // --- Branch Management (Admin) ---
+                .requestMatchers(HttpMethod.POST, "/api/v1/branches").hasAuthority("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/v1/branches/**").hasAuthority("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/v1/branches/**").hasAuthority("ADMIN")
+
+                // --- Inventory Management ---
+                // Allow authenticated users to view specific raw inventory details
+                .requestMatchers(HttpMethod.GET,
+                    "/api/v1/inventory", // Get all raw inventory  <-- This line
+                    "/api/v1/inventory/{id}", // Get raw inventory by ID
+                    "/api/v1/inventory/branch/{branchId}", // Get raw inventory by branch
+                    "/api/v1/inventory/product/{productId}", // Get raw inventory by product
+                    "/api/v1/inventory/branch/{branchId}/product/{productId}" // Get specific raw item
+                 ).authenticated() // Requires authentication <-- This rule applies
+                // Require ADMIN to modify inventory
+                .requestMatchers(HttpMethod.POST, "/api/v1/inventory").hasAuthority("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/v1/inventory/**").hasAuthority("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/v1/inventory/**").hasAuthority("ADMIN")
+
+                // --- Other Secured Endpoints ---
                 .requestMatchers("/api/users/me").authenticated()
-                .requestMatchers("/api/addresses/**").authenticated() // Secure all address endpoints
+                .requestMatchers("/api/addresses/**").authenticated()
 
-                // Configure other endpoint security (e.g., require authentication)
-                // .requestMatchers("/api/orders/**").authenticated()
-                // .requestMatchers("/api/admin/**").hasRole("ADMIN") // Example role-based access
-                // Secure all other requests by default
+                // Secure all other requests
                 .anyRequest().authenticated()
             )
-            // Configure session management to be stateless - common for APIs using tokens
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            // Add your JWT filter before the standard UsernamePasswordAuthenticationFilter
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
-
-        // Add other configurations like exception handling, authentication provider, etc.
 
         return http.build();
     }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        // Use a strong password encoder
         return new BCryptPasswordEncoder();
     }
 

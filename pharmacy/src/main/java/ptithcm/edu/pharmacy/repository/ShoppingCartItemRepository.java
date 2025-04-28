@@ -6,10 +6,9 @@ import ptithcm.edu.pharmacy.entity.ShoppingCartItem;
 import java.util.Optional;
 
 public interface ShoppingCartItemRepository extends JpaRepository<ShoppingCartItem, Integer> {
-    // Rename Inventory_Id to Inventory_InventoryId to match the field in BranchInventory
-    Optional<ShoppingCartItem> findByCart_CartIdAndInventory_InventoryId(Integer cartId, Integer inventoryId);
+    // Optional: Add custom queries if needed, e.g., finding by cart ID and item ID
+    //Optional<ShoppingCartItem> findByCart_CartIdAndCartItemId(Integer cartId, Integer cartItemId);
 
-    // You might also need methods like these (adjust as needed):
-    // List<ShoppingCartItem> findByCart_CartId(Integer cartId);
-    // void deleteByCart_CartIdAndInventory_InventoryId(Integer cartId, Integer inventoryId);
+    // Find item by ID and ensure it belongs to the correct user's cart
+    Optional<ShoppingCartItem> findByCartItemIdAndCart_User_UserId(Integer cartItemId, Integer userId);
 }

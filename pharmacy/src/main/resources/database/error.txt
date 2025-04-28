@@ -1,7 +1,4 @@
-2025-04-28T06:33:12.586+07:00  INFO 28445 --- [pharmacy] [nio-8080-exec-2] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
-2025-04-28T06:33:12.590+07:00  INFO 28445 --- [pharmacy] [nio-8080-exec-2] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
-2025-04-28T06:33:12.622+07:00  INFO 28445 --- [pharmacy] [nio-8080-exec-2] o.s.web.servlet.DispatcherServlet        : Completed initialization in 32 ms
-2025-04-28T06:33:12.780+07:00 DEBUG 28445 --- [pharmacy] [nio-8080-exec-2] org.hibernate.SQL                        : 
+2025-04-28T10:09:37.333+07:00 DEBUG 67719 --- [pharmacy] [nio-8080-exec-3] org.hibernate.SQL                        : 
     select
         u1_0.user_id,
         u1_0.address,
@@ -37,7 +34,7 @@ Hibernate:
         Users u1_0 
     where
         u1_0.phone_number=?
-2025-04-28T06:33:12.849+07:00 DEBUG 28445 --- [pharmacy] [nio-8080-exec-2] org.hibernate.SQL                        : 
+2025-04-28T10:09:37.387+07:00 DEBUG 67719 --- [pharmacy] [nio-8080-exec-3] org.hibernate.SQL                        : 
     select
         r1_0.user_id,
         r1_1.role_id,
@@ -63,8 +60,8 @@ Hibernate:
             on r1_1.role_id=r1_0.role_id 
     where
         r1_0.user_id=?
-2025-04-28T06:33:12.913+07:00  INFO 28445 --- [pharmacy] [nio-8080-exec-2] p.e.p.controller.ShoppingCartController  : Received request to add item to cart for user: 0987351477
-2025-04-28T06:33:12.915+07:00 DEBUG 28445 --- [pharmacy] [nio-8080-exec-2] org.hibernate.SQL                        : 
+2025-04-28T10:09:37.475+07:00  INFO 67719 --- [pharmacy] [nio-8080-exec-3] p.e.p.controller.ShoppingCartController  : Received request to remove cart item ID: 21 for user: 0987351477
+2025-04-28T10:09:37.477+07:00 DEBUG 67719 --- [pharmacy] [nio-8080-exec-3] org.hibernate.SQL                        : 
     select
         u1_0.user_id,
         u1_0.address,
@@ -100,178 +97,96 @@ Hibernate:
         Users u1_0 
     where
         u1_0.phone_number=?
-2025-04-28T06:33:12.919+07:00  INFO 28445 --- [pharmacy] [nio-8080-exec-2] p.e.p.s.impl.ShoppingCartServiceImpl     : addItemToCart started for userId: 3, request: AddToCartRequest(branchId=3, productId=9, quantity=2)
-2025-04-28T06:33:12.931+07:00 DEBUG 28445 --- [pharmacy] [nio-8080-exec-2] org.hibernate.SQL                        : 
+2025-04-28T10:09:37.479+07:00  INFO 67719 --- [pharmacy] [nio-8080-exec-3] p.e.p.s.impl.ShoppingCartServiceImpl     : Attempting to remove cart item ID: 21 for user ID: 3
+2025-04-28T10:09:37.484+07:00 DEBUG 67719 --- [pharmacy] [nio-8080-exec-3] org.hibernate.SQL                        : 
     select
-        bi1_0.inventory_id,
-        bi1_0.batch_number,
-        bi1_0.branch_id,
-        bi1_0.discount_price,
-        bi1_0.expiry_date,
-        bi1_0.last_updated,
-        bi1_0.location_in_store,
-        bi1_0.price,
-        bi1_0.product_id,
-        bi1_0.quantity_on_hand 
+        sci1_0.cart_item_id,
+        sci1_0.added_at,
+        sci1_0.cart_id,
+        sci1_0.inventory_id,
+        sci1_0.quantity 
     from
-        Branch_Inventory bi1_0 
+        Shopping_Cart_Items sci1_0 
     left join
-        Branches b1_0 
-            on b1_0.branch_id=bi1_0.branch_id 
+        Shopping_Carts c1_0 
+            on c1_0.cart_id=sci1_0.cart_id 
     left join
-        Products p1_0 
-            on p1_0.product_id=bi1_0.product_id 
+        Users u1_0 
+            on u1_0.user_id=c1_0.user_id 
     where
-        b1_0.branch_id=? 
-        and p1_0.product_id=?
+        sci1_0.cart_item_id=? 
+        and u1_0.user_id=?
 Hibernate: 
     select
-        bi1_0.inventory_id,
-        bi1_0.batch_number,
-        bi1_0.branch_id,
-        bi1_0.discount_price,
-        bi1_0.expiry_date,
-        bi1_0.last_updated,
-        bi1_0.location_in_store,
-        bi1_0.price,
-        bi1_0.product_id,
-        bi1_0.quantity_on_hand 
+        sci1_0.cart_item_id,
+        sci1_0.added_at,
+        sci1_0.cart_id,
+        sci1_0.inventory_id,
+        sci1_0.quantity 
     from
-        Branch_Inventory bi1_0 
+        Shopping_Cart_Items sci1_0 
     left join
-        Branches b1_0 
-            on b1_0.branch_id=bi1_0.branch_id 
+        Shopping_Carts c1_0 
+            on c1_0.cart_id=sci1_0.cart_id 
     left join
-        Products p1_0 
-            on p1_0.product_id=bi1_0.product_id 
+        Users u1_0 
+            on u1_0.user_id=c1_0.user_id 
     where
-        b1_0.branch_id=? 
-        and p1_0.product_id=?
-2025-04-28T06:33:12.955+07:00 DEBUG 28445 --- [pharmacy] [nio-8080-exec-2] org.hibernate.SQL                        : 
-    select
-        b1_0.branch_id,
-        b1_0.address,
-        b1_0.created_at,
-        b1_0.is_active,
-        b1_0.latitude,
-        b1_0.longitude,
-        b1_0.name,
-        b1_0.operating_hours,
-        b1_0.phone_number,
-        b1_0.updated_at 
-    from
-        Branches b1_0 
-    where
-        b1_0.branch_id=?
-Hibernate: 
-    select
-        b1_0.branch_id,
-        b1_0.address,
-        b1_0.created_at,
-        b1_0.is_active,
-        b1_0.latitude,
-        b1_0.longitude,
-        b1_0.name,
-        b1_0.operating_hours,
-        b1_0.phone_number,
-        b1_0.updated_at 
-    from
-        Branches b1_0 
-    where
-        b1_0.branch_id=?
-2025-04-28T06:33:12.957+07:00 DEBUG 28445 --- [pharmacy] [nio-8080-exec-2] org.hibernate.SQL                        : 
-    select
-        p1_0.product_id,
-        p1_0.average_rating,
-        p1_0.brand_id,
-        p1_0.category_id,
-        p1_0.contraindications,
-        p1_0.created_at,
-        p1_0.description,
-        p1_0.image_url,
-        p1_0.ingredients,
-        p1_0.is_prescription_required,
-        p1_0.manufacturer_id,
-        p1_0.name,
-        p1_0.packaging,
-        p1_0.review_count,
-        p1_0.side_effects,
-        p1_0.sku,
-        p1_0.slug,
-        p1_0.status,
-        p1_0.storage_conditions,
-        p1_0.unit,
-        p1_0.updated_at,
-        p1_0.usage_instructions 
-    from
-        Products p1_0 
-    where
-        p1_0.product_id=?
-Hibernate: 
-    select
-        p1_0.product_id,
-        p1_0.average_rating,
-        p1_0.brand_id,
-        p1_0.category_id,
-        p1_0.contraindications,
-        p1_0.created_at,
-        p1_0.description,
-        p1_0.image_url,
-        p1_0.ingredients,
-        p1_0.is_prescription_required,
-        p1_0.manufacturer_id,
-        p1_0.name,
-        p1_0.packaging,
-        p1_0.review_count,
-        p1_0.side_effects,
-        p1_0.sku,
-        p1_0.slug,
-        p1_0.status,
-        p1_0.storage_conditions,
-        p1_0.unit,
-        p1_0.updated_at,
-        p1_0.usage_instructions 
-    from
-        Products p1_0 
-    where
-        p1_0.product_id=?
-2025-04-28T06:33:12.969+07:00 DEBUG 28445 --- [pharmacy] [nio-8080-exec-2] org.hibernate.SQL                        : 
+        sci1_0.cart_item_id=? 
+        and u1_0.user_id=?
+2025-04-28T10:09:37.498+07:00 DEBUG 67719 --- [pharmacy] [nio-8080-exec-3] org.hibernate.SQL                        : 
     select
         sc1_0.cart_id,
         sc1_0.branch_id,
         sc1_0.created_at,
         sc1_0.updated_at,
-        sc1_0.user_id 
+        sc1_0.user_id,
+        u1_0.user_id,
+        u1_0.address,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.email,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.is_active,
+        u1_0.last_login,
+        u1_0.password_hash,
+        u1_0.phone_number,
+        u1_0.updated_at 
     from
         Shopping_Carts sc1_0 
-    left join
+    join
         Users u1_0 
             on u1_0.user_id=sc1_0.user_id 
-    left join
-        Branches b1_0 
-            on b1_0.branch_id=sc1_0.branch_id 
     where
-        u1_0.user_id=? 
-        and b1_0.branch_id=?
+        sc1_0.cart_id=?
 Hibernate: 
     select
         sc1_0.cart_id,
         sc1_0.branch_id,
         sc1_0.created_at,
         sc1_0.updated_at,
-        sc1_0.user_id 
+        sc1_0.user_id,
+        u1_0.user_id,
+        u1_0.address,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.email,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.is_active,
+        u1_0.last_login,
+        u1_0.password_hash,
+        u1_0.phone_number,
+        u1_0.updated_at 
     from
         Shopping_Carts sc1_0 
-    left join
+    join
         Users u1_0 
             on u1_0.user_id=sc1_0.user_id 
-    left join
-        Branches b1_0 
-            on b1_0.branch_id=sc1_0.branch_id 
     where
-        u1_0.user_id=? 
-        and b1_0.branch_id=?
-2025-04-28T06:33:12.979+07:00 DEBUG 28445 --- [pharmacy] [nio-8080-exec-2] org.hibernate.SQL                        : 
+        sc1_0.cart_id=?
+2025-04-28T10:09:37.525+07:00 DEBUG 67719 --- [pharmacy] [nio-8080-exec-3] org.hibernate.SQL                        : 
     select
         ci1_0.cart_id,
         ci1_0.cart_item_id,
@@ -293,196 +208,11 @@ Hibernate:
         Shopping_Cart_Items ci1_0 
     where
         ci1_0.cart_id=?
-2025-04-28T06:33:12.998+07:00  INFO 28445 --- [pharmacy] [nio-8080-exec-2] p.e.p.s.impl.ShoppingCartServiceImpl     : Successfully saved cart ID: 18
-2025-04-28T06:33:13.005+07:00 DEBUG 28445 --- [pharmacy] [nio-8080-exec-2] org.hibernate.SQL                        : 
-    update
-        Shopping_Carts 
-    set
-        branch_id=?,
-        created_at=?,
-        updated_at=?,
-        user_id=? 
-    where
-        cart_id=?
-Hibernate: 
-    update
-        Shopping_Carts 
-    set
-        branch_id=?,
-        created_at=?,
-        updated_at=?,
-        user_id=? 
-    where
-        cart_id=?
-2025-04-28T06:33:13.017+07:00 DEBUG 28445 --- [pharmacy] [nio-8080-exec-2] org.hibernate.SQL                        : 
-    update
-        Shopping_Cart_Items 
-    set
-        added_at=?,
-        cart_id=?,
-        inventory_id=?,
-        quantity=? 
-    where
-        cart_item_id=?
-Hibernate: 
-    update
-        Shopping_Cart_Items 
-    set
-        added_at=?,
-        cart_id=?,
-        inventory_id=?,
-        quantity=? 
-    where
-        cart_item_id=?
-2025-04-28T06:33:13.022+07:00  INFO 28445 --- [pharmacy] [nio-8080-exec-2] p.e.p.controller.ShoppingCartController  : Successfully added/updated item for user ID: 3
-2025-04-28T06:33:16.466+07:00 DEBUG 28445 --- [pharmacy] [nio-8080-exec-3] org.hibernate.SQL                        : 
-    select
-        u1_0.user_id,
-        u1_0.address,
-        u1_0.created_at,
-        u1_0.date_of_birth,
-        u1_0.email,
-        u1_0.full_name,
-        u1_0.gender,
-        u1_0.is_active,
-        u1_0.last_login,
-        u1_0.password_hash,
-        u1_0.phone_number,
-        u1_0.updated_at 
-    from
-        Users u1_0 
-    where
-        u1_0.phone_number=?
-Hibernate: 
-    select
-        u1_0.user_id,
-        u1_0.address,
-        u1_0.created_at,
-        u1_0.date_of_birth,
-        u1_0.email,
-        u1_0.full_name,
-        u1_0.gender,
-        u1_0.is_active,
-        u1_0.last_login,
-        u1_0.password_hash,
-        u1_0.phone_number,
-        u1_0.updated_at 
-    from
-        Users u1_0 
-    where
-        u1_0.phone_number=?
-2025-04-28T06:33:16.478+07:00 DEBUG 28445 --- [pharmacy] [nio-8080-exec-3] org.hibernate.SQL                        : 
-    select
-        r1_0.user_id,
-        r1_1.role_id,
-        r1_1.description,
-        r1_1.role_name 
-    from
-        User_Roles r1_0 
-    join
-        Roles r1_1 
-            on r1_1.role_id=r1_0.role_id 
-    where
-        r1_0.user_id=?
-Hibernate: 
-    select
-        r1_0.user_id,
-        r1_1.role_id,
-        r1_1.description,
-        r1_1.role_name 
-    from
-        User_Roles r1_0 
-    join
-        Roles r1_1 
-            on r1_1.role_id=r1_0.role_id 
-    where
-        r1_0.user_id=?
-2025-04-28T06:33:16.489+07:00  INFO 28445 --- [pharmacy] [nio-8080-exec-3] p.e.p.controller.ShoppingCartController  : Received request to add item to cart for user: 0987351477
-2025-04-28T06:33:16.491+07:00 DEBUG 28445 --- [pharmacy] [nio-8080-exec-3] org.hibernate.SQL                        : 
-    select
-        u1_0.user_id,
-        u1_0.address,
-        u1_0.created_at,
-        u1_0.date_of_birth,
-        u1_0.email,
-        u1_0.full_name,
-        u1_0.gender,
-        u1_0.is_active,
-        u1_0.last_login,
-        u1_0.password_hash,
-        u1_0.phone_number,
-        u1_0.updated_at 
-    from
-        Users u1_0 
-    where
-        u1_0.phone_number=?
-Hibernate: 
-    select
-        u1_0.user_id,
-        u1_0.address,
-        u1_0.created_at,
-        u1_0.date_of_birth,
-        u1_0.email,
-        u1_0.full_name,
-        u1_0.gender,
-        u1_0.is_active,
-        u1_0.last_login,
-        u1_0.password_hash,
-        u1_0.phone_number,
-        u1_0.updated_at 
-    from
-        Users u1_0 
-    where
-        u1_0.phone_number=?
-2025-04-28T06:33:16.494+07:00  INFO 28445 --- [pharmacy] [nio-8080-exec-3] p.e.p.s.impl.ShoppingCartServiceImpl     : addItemToCart started for userId: 3, request: AddToCartRequest(branchId=3, productId=8, quantity=2)
-2025-04-28T06:33:16.497+07:00 DEBUG 28445 --- [pharmacy] [nio-8080-exec-3] org.hibernate.SQL                        : 
+2025-04-28T10:09:37.530+07:00 DEBUG 67719 --- [pharmacy] [nio-8080-exec-3] org.hibernate.SQL                        : 
     select
         bi1_0.inventory_id,
         bi1_0.batch_number,
         bi1_0.branch_id,
-        bi1_0.discount_price,
-        bi1_0.expiry_date,
-        bi1_0.last_updated,
-        bi1_0.location_in_store,
-        bi1_0.price,
-        bi1_0.product_id,
-        bi1_0.quantity_on_hand 
-    from
-        Branch_Inventory bi1_0 
-    left join
-        Branches b1_0 
-            on b1_0.branch_id=bi1_0.branch_id 
-    left join
-        Products p1_0 
-            on p1_0.product_id=bi1_0.product_id 
-    where
-        b1_0.branch_id=? 
-        and p1_0.product_id=?
-Hibernate: 
-    select
-        bi1_0.inventory_id,
-        bi1_0.batch_number,
-        bi1_0.branch_id,
-        bi1_0.discount_price,
-        bi1_0.expiry_date,
-        bi1_0.last_updated,
-        bi1_0.location_in_store,
-        bi1_0.price,
-        bi1_0.product_id,
-        bi1_0.quantity_on_hand 
-    from
-        Branch_Inventory bi1_0 
-    left join
-        Branches b1_0 
-            on b1_0.branch_id=bi1_0.branch_id 
-    left join
-        Products p1_0 
-            on p1_0.product_id=bi1_0.product_id 
-    where
-        b1_0.branch_id=? 
-        and p1_0.product_id=?
-2025-04-28T06:33:16.500+07:00 DEBUG 28445 --- [pharmacy] [nio-8080-exec-3] org.hibernate.SQL                        : 
-    select
         b1_0.branch_id,
         b1_0.address,
         b1_0.created_at,
@@ -492,29 +222,13 @@ Hibernate:
         b1_0.name,
         b1_0.operating_hours,
         b1_0.phone_number,
-        b1_0.updated_at 
-    from
-        Branches b1_0 
-    where
-        b1_0.branch_id=?
-Hibernate: 
-    select
-        b1_0.branch_id,
-        b1_0.address,
-        b1_0.created_at,
-        b1_0.is_active,
-        b1_0.latitude,
-        b1_0.longitude,
-        b1_0.name,
-        b1_0.operating_hours,
-        b1_0.phone_number,
-        b1_0.updated_at 
-    from
-        Branches b1_0 
-    where
-        b1_0.branch_id=?
-2025-04-28T06:33:16.516+07:00 DEBUG 28445 --- [pharmacy] [nio-8080-exec-3] org.hibernate.SQL                        : 
-    select
+        b1_0.updated_at,
+        bi1_0.discount_price,
+        bi1_0.expiry_date,
+        bi1_0.last_updated,
+        bi1_0.location_in_store,
+        bi1_0.price,
+        bi1_0.product_id,
         p1_0.product_id,
         p1_0.average_rating,
         p1_0.brand_id,
@@ -536,13 +250,39 @@ Hibernate:
         p1_0.storage_conditions,
         p1_0.unit,
         p1_0.updated_at,
-        p1_0.usage_instructions 
+        p1_0.usage_instructions,
+        bi1_0.quantity_on_hand 
     from
+        Branch_Inventory bi1_0 
+    join
+        Branches b1_0 
+            on b1_0.branch_id=bi1_0.branch_id 
+    join
         Products p1_0 
+            on p1_0.product_id=bi1_0.product_id 
     where
-        p1_0.product_id=?
+        bi1_0.inventory_id=?
 Hibernate: 
     select
+        bi1_0.inventory_id,
+        bi1_0.batch_number,
+        bi1_0.branch_id,
+        b1_0.branch_id,
+        b1_0.address,
+        b1_0.created_at,
+        b1_0.is_active,
+        b1_0.latitude,
+        b1_0.longitude,
+        b1_0.name,
+        b1_0.operating_hours,
+        b1_0.phone_number,
+        b1_0.updated_at,
+        bi1_0.discount_price,
+        bi1_0.expiry_date,
+        bi1_0.last_updated,
+        bi1_0.location_in_store,
+        bi1_0.price,
+        bi1_0.product_id,
         p1_0.product_id,
         p1_0.average_rating,
         p1_0.brand_id,
@@ -564,26 +304,141 @@ Hibernate:
         p1_0.storage_conditions,
         p1_0.unit,
         p1_0.updated_at,
-        p1_0.usage_instructions 
+        p1_0.usage_instructions,
+        bi1_0.quantity_on_hand 
     from
+        Branch_Inventory bi1_0 
+    join
+        Branches b1_0 
+            on b1_0.branch_id=bi1_0.branch_id 
+    join
         Products p1_0 
+            on p1_0.product_id=bi1_0.product_id 
     where
-        p1_0.product_id=?
-2025-04-28T06:33:16.521+07:00 ERROR 28445 --- [pharmacy] [nio-8080-exec-3] p.e.p.controller.ShoppingCartController  : Unexpected error adding item to cart for user 0987351477: Query did not return a unique result: 2 results were returned
+        bi1_0.inventory_id=?
+2025-04-28T10:09:37.542+07:00 DEBUG 67719 --- [pharmacy] [nio-8080-exec-3] org.hibernate.SQL                        : 
+    select
+        bi1_0.inventory_id,
+        bi1_0.batch_number,
+        bi1_0.branch_id,
+        b1_0.branch_id,
+        b1_0.address,
+        b1_0.created_at,
+        b1_0.is_active,
+        b1_0.latitude,
+        b1_0.longitude,
+        b1_0.name,
+        b1_0.operating_hours,
+        b1_0.phone_number,
+        b1_0.updated_at,
+        bi1_0.discount_price,
+        bi1_0.expiry_date,
+        bi1_0.last_updated,
+        bi1_0.location_in_store,
+        bi1_0.price,
+        bi1_0.product_id,
+        p1_0.product_id,
+        p1_0.average_rating,
+        p1_0.brand_id,
+        p1_0.category_id,
+        p1_0.contraindications,
+        p1_0.created_at,
+        p1_0.description,
+        p1_0.image_url,
+        p1_0.ingredients,
+        p1_0.is_prescription_required,
+        p1_0.manufacturer_id,
+        p1_0.name,
+        p1_0.packaging,
+        p1_0.review_count,
+        p1_0.side_effects,
+        p1_0.sku,
+        p1_0.slug,
+        p1_0.status,
+        p1_0.storage_conditions,
+        p1_0.unit,
+        p1_0.updated_at,
+        p1_0.usage_instructions,
+        bi1_0.quantity_on_hand 
+    from
+        Branch_Inventory bi1_0 
+    join
+        Branches b1_0 
+            on b1_0.branch_id=bi1_0.branch_id 
+    join
+        Products p1_0 
+            on p1_0.product_id=bi1_0.product_id 
+    where
+        bi1_0.inventory_id=?
+Hibernate: 
+    select
+        bi1_0.inventory_id,
+        bi1_0.batch_number,
+        bi1_0.branch_id,
+        b1_0.branch_id,
+        b1_0.address,
+        b1_0.created_at,
+        b1_0.is_active,
+        b1_0.latitude,
+        b1_0.longitude,
+        b1_0.name,
+        b1_0.operating_hours,
+        b1_0.phone_number,
+        b1_0.updated_at,
+        bi1_0.discount_price,
+        bi1_0.expiry_date,
+        bi1_0.last_updated,
+        bi1_0.location_in_store,
+        bi1_0.price,
+        bi1_0.product_id,
+        p1_0.product_id,
+        p1_0.average_rating,
+        p1_0.brand_id,
+        p1_0.category_id,
+        p1_0.contraindications,
+        p1_0.created_at,
+        p1_0.description,
+        p1_0.image_url,
+        p1_0.ingredients,
+        p1_0.is_prescription_required,
+        p1_0.manufacturer_id,
+        p1_0.name,
+        p1_0.packaging,
+        p1_0.review_count,
+        p1_0.side_effects,
+        p1_0.sku,
+        p1_0.slug,
+        p1_0.status,
+        p1_0.storage_conditions,
+        p1_0.unit,
+        p1_0.updated_at,
+        p1_0.usage_instructions,
+        bi1_0.quantity_on_hand 
+    from
+        Branch_Inventory bi1_0 
+    join
+        Branches b1_0 
+            on b1_0.branch_id=bi1_0.branch_id 
+    join
+        Products p1_0 
+            on p1_0.product_id=bi1_0.product_id 
+    where
+        bi1_0.inventory_id=?
+2025-04-28T10:09:37.561+07:00 ERROR 67719 --- [pharmacy] [nio-8080-exec-3] p.e.p.controller.ShoppingCartController  : Unexpected error removing cart item ID 21 for user 0987351477: org.hibernate.ObjectDeletedException: deleted instance passed to merge: [ptithcm.edu.pharmacy.entity.ShoppingCartItem#<null>]
 
-org.springframework.dao.IncorrectResultSizeDataAccessException: Query did not return a unique result: 2 results were returned
-        at org.springframework.orm.jpa.vendor.HibernateJpaDialect.convertHibernateAccessException(HibernateJpaDialect.java:301) ~[spring-orm-6.2.5.jar:6.2.5]
-        at org.springframework.orm.jpa.vendor.HibernateJpaDialect.translateExceptionIfPossible(HibernateJpaDialect.java:244) ~[spring-orm-6.2.5.jar:6.2.5]
+org.springframework.dao.InvalidDataAccessApiUsageException: org.hibernate.ObjectDeletedException: deleted instance passed to merge: [ptithcm.edu.pharmacy.entity.ShoppingCartItem#<null>]
+        at org.springframework.orm.jpa.EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(EntityManagerFactoryUtils.java:371) ~[spring-orm-6.2.5.jar:6.2.5]
+        at org.springframework.orm.jpa.vendor.HibernateJpaDialect.translateExceptionIfPossible(HibernateJpaDialect.java:246) ~[spring-orm-6.2.5.jar:6.2.5]
         at org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.translateExceptionIfPossible(AbstractEntityManagerFactoryBean.java:560) ~[spring-orm-6.2.5.jar:6.2.5]
         at org.springframework.dao.support.ChainedPersistenceExceptionTranslator.translateExceptionIfPossible(ChainedPersistenceExceptionTranslator.java:61) ~[spring-tx-6.2.5.jar:6.2.5]
         at org.springframework.dao.support.DataAccessUtils.translateIfNecessary(DataAccessUtils.java:343) ~[spring-tx-6.2.5.jar:6.2.5]
         at org.springframework.dao.support.PersistenceExceptionTranslationInterceptor.invoke(PersistenceExceptionTranslationInterceptor.java:160) ~[spring-tx-6.2.5.jar:6.2.5]
         at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184) ~[spring-aop-6.2.5.jar:6.2.5]
-        at org.springframework.data.jpa.repository.support.CrudMethodMetadataPostProcessor$CrudMethodMetadataPopulatingMethodInterceptor.invoke(CrudMethodMetadataPostProcessor.java:136) ~[spring-data-jpa-3.4.4.jar:3.4.4]
+        at org.springframework.data.jpa.repository.support.CrudMethodMetadataPostProcessor$CrudMethodMetadataPopulatingMethodInterceptor.invoke(CrudMethodMetadataPostProcessor.java:165) ~[spring-data-jpa-3.4.4.jar:3.4.4]
         at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184) ~[spring-aop-6.2.5.jar:6.2.5]
         at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:223) ~[spring-aop-6.2.5.jar:6.2.5]
-        at jdk.proxy6/jdk.proxy6.$Proxy177.findByBranch_BranchIdAndProduct_Id(Unknown Source) ~[na:na]
-        at ptithcm.edu.pharmacy.service.impl.ShoppingCartServiceImpl.addItemToCart(ShoppingCartServiceImpl.java:46) ~[classes/:na]
+        at jdk.proxy22/jdk.proxy22.$Proxy311.save(Unknown Source) ~[na:na]
+        at ptithcm.edu.pharmacy.service.impl.ShoppingCartServiceImpl.removeItemFromCart(ShoppingCartServiceImpl.java:360) ~[classes/:na]
         at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
         at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
         at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:359) ~[spring-aop-6.2.5.jar:6.2.5]
@@ -593,8 +448,8 @@ org.springframework.dao.IncorrectResultSizeDataAccessException: Query did not re
         at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:119) ~[spring-tx-6.2.5.jar:6.2.5]
         at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184) ~[spring-aop-6.2.5.jar:6.2.5]
         at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:727) ~[spring-aop-6.2.5.jar:6.2.5]
-        at ptithcm.edu.pharmacy.service.impl.ShoppingCartServiceImpl$$SpringCGLIB$$0.addItemToCart(<generated>) ~[classes/:na]
-        at ptithcm.edu.pharmacy.controller.ShoppingCartController.addItemToCart(ShoppingCartController.java:54) ~[classes/:na]
+        at ptithcm.edu.pharmacy.service.impl.ShoppingCartServiceImpl$$SpringCGLIB$$0.removeItemFromCart(<generated>) ~[classes/:na]
+        at ptithcm.edu.pharmacy.controller.ShoppingCartController.removeCartItem(ShoppingCartController.java:176) ~[classes/:na]
         at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
         at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
         at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:258) ~[spring-web-6.2.5.jar:6.2.5]
@@ -606,8 +461,8 @@ org.springframework.dao.IncorrectResultSizeDataAccessException: Query did not re
         at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1089) ~[spring-webmvc-6.2.5.jar:6.2.5]
         at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:979) ~[spring-webmvc-6.2.5.jar:6.2.5]
         at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014) ~[spring-webmvc-6.2.5.jar:6.2.5]
-        at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:914) ~[spring-webmvc-6.2.5.jar:6.2.5]
-        at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:590) ~[tomcat-embed-core-10.1.39.jar:6.0]
+        at org.springframework.web.servlet.FrameworkServlet.doDelete(FrameworkServlet.java:936) ~[spring-webmvc-6.2.5.jar:6.2.5]
+        at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:596) ~[tomcat-embed-core-10.1.39.jar:6.0]
         at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885) ~[spring-webmvc-6.2.5.jar:6.2.5]
         at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658) ~[tomcat-embed-core-10.1.39.jar:6.0]
         at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:195) ~[tomcat-embed-core-10.1.39.jar:10.1.39]
@@ -693,16 +548,48 @@ org.springframework.dao.IncorrectResultSizeDataAccessException: Query did not re
         at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659) ~[tomcat-embed-core-10.1.39.jar:10.1.39]
         at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63) ~[tomcat-embed-core-10.1.39.jar:10.1.39]
         at java.base/java.lang.Thread.run(Thread.java:1583) ~[na:na]
-Caused by: org.hibernate.NonUniqueResultException: Query did not return a unique result: 2 results were returned
-        at org.hibernate.query.spi.AbstractSelectionQuery.uniqueElement(AbstractSelectionQuery.java:298) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
-        at org.hibernate.query.spi.AbstractSelectionQuery.getSingleResult(AbstractSelectionQuery.java:281) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
-        at org.springframework.data.jpa.repository.query.JpaQueryExecution$SingleEntityExecution.doExecute(JpaQueryExecution.java:224) ~[spring-data-jpa-3.4.4.jar:3.4.4]
-        at org.springframework.data.jpa.repository.query.JpaQueryExecution.execute(JpaQueryExecution.java:93) ~[spring-data-jpa-3.4.4.jar:3.4.4]
-        at org.springframework.data.jpa.repository.query.AbstractJpaQuery.doExecute(AbstractJpaQuery.java:152) ~[spring-data-jpa-3.4.4.jar:3.4.4]
-        at org.springframework.data.jpa.repository.query.AbstractJpaQuery.execute(AbstractJpaQuery.java:140) ~[spring-data-jpa-3.4.4.jar:3.4.4]
+Caused by: java.lang.IllegalArgumentException: org.hibernate.ObjectDeletedException: deleted instance passed to merge: [ptithcm.edu.pharmacy.entity.ShoppingCartItem#<null>]
+        at org.hibernate.internal.SessionImpl.fireMerge(SessionImpl.java:878) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.internal.SessionImpl.merge(SessionImpl.java:846) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.engine.spi.CascadingActions$6.cascade(CascadingActions.java:258) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.engine.spi.CascadingActions$6.cascade(CascadingActions.java:248) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.engine.internal.Cascade.cascadeToOne(Cascade.java:570) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.engine.internal.Cascade.cascadeAssociation(Cascade.java:492) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.engine.internal.Cascade.cascadeProperty(Cascade.java:253) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.engine.internal.Cascade.cascadeCollectionElements(Cascade.java:604) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.engine.internal.Cascade.cascadeCollection(Cascade.java:534) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.engine.internal.Cascade.cascadeAssociation(Cascade.java:495) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.engine.internal.Cascade.cascadeProperty(Cascade.java:253) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.engine.internal.Cascade.cascade(Cascade.java:192) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.event.internal.DefaultMergeEventListener.cascadeOnMerge(DefaultMergeEventListener.java:667) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.event.internal.DefaultMergeEventListener.entityIsPersistent(DefaultMergeEventListener.java:285) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.event.internal.DefaultMergeEventListener.merge(DefaultMergeEventListener.java:220) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.event.internal.DefaultMergeEventListener.doMerge(DefaultMergeEventListener.java:152) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.event.internal.DefaultMergeEventListener.onMerge(DefaultMergeEventListener.java:121) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.event.internal.DefaultMergeEventListener.onMerge(DefaultMergeEventListener.java:89) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.event.service.internal.EventListenerGroupImpl.fireEventOnEachListener(EventListenerGroupImpl.java:127) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.internal.SessionImpl.fireMerge(SessionImpl.java:854) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.internal.SessionImpl.merge(SessionImpl.java:840) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
+        at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
+        at org.springframework.orm.jpa.ExtendedEntityManagerCreator$ExtendedEntityManagerInvocationHandler.invoke(ExtendedEntityManagerCreator.java:364) ~[spring-orm-6.2.5.jar:6.2.5]
+        at jdk.proxy22/jdk.proxy22.$Proxy298.merge(Unknown Source) ~[na:na]
+        at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
+        at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
+        at org.springframework.orm.jpa.SharedEntityManagerCreator$SharedEntityManagerInvocationHandler.invoke(SharedEntityManagerCreator.java:320) ~[spring-orm-6.2.5.jar:6.2.5]
+        at jdk.proxy22/jdk.proxy22.$Proxy298.merge(Unknown Source) ~[na:na]
+        at org.springframework.data.jpa.repository.support.SimpleJpaRepository.save(SimpleJpaRepository.java:639) ~[spring-data-jpa-3.4.4.jar:3.4.4]
+        at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
+        at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
+        at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:359) ~[spring-aop-6.2.5.jar:6.2.5]
+        at org.springframework.data.repository.core.support.RepositoryMethodInvoker$RepositoryFragmentMethodInvoker.lambda$new$0(RepositoryMethodInvoker.java:277) ~[spring-data-commons-3.4.4.jar:3.4.4]
         at org.springframework.data.repository.core.support.RepositoryMethodInvoker.doInvoke(RepositoryMethodInvoker.java:170) ~[spring-data-commons-3.4.4.jar:3.4.4]
         at org.springframework.data.repository.core.support.RepositoryMethodInvoker.invoke(RepositoryMethodInvoker.java:158) ~[spring-data-commons-3.4.4.jar:3.4.4]
-        at org.springframework.data.repository.core.support.QueryExecutorMethodInterceptor.doInvoke(QueryExecutorMethodInterceptor.java:170) ~[spring-data-commons-3.4.4.jar:3.4.4]
+        at org.springframework.data.repository.core.support.RepositoryComposition$RepositoryFragments.invoke(RepositoryComposition.java:515) ~[spring-data-commons-3.4.4.jar:3.4.4]
+        at org.springframework.data.repository.core.support.RepositoryComposition.invoke(RepositoryComposition.java:284) ~[spring-data-commons-3.4.4.jar:3.4.4]
+        at org.springframework.data.repository.core.support.RepositoryFactorySupport$ImplementationMethodExecutionInterceptor.invoke(RepositoryFactorySupport.java:731) ~[spring-data-commons-3.4.4.jar:3.4.4]
+        at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184) ~[spring-aop-6.2.5.jar:6.2.5]
+        at org.springframework.data.repository.core.support.QueryExecutorMethodInterceptor.doInvoke(QueryExecutorMethodInterceptor.java:174) ~[spring-data-commons-3.4.4.jar:3.4.4]
         at org.springframework.data.repository.core.support.QueryExecutorMethodInterceptor.invoke(QueryExecutorMethodInterceptor.java:149) ~[spring-data-commons-3.4.4.jar:3.4.4]
         at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184) ~[spring-aop-6.2.5.jar:6.2.5]
         at org.springframework.data.projection.DefaultMethodInvokingMethodInterceptor.invoke(DefaultMethodInvokingMethodInterceptor.java:69) ~[spring-data-commons-3.4.4.jar:3.4.4]
@@ -712,4 +599,620 @@ Caused by: org.hibernate.NonUniqueResultException: Query did not return a unique
         at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184) ~[spring-aop-6.2.5.jar:6.2.5]
         at org.springframework.dao.support.PersistenceExceptionTranslationInterceptor.invoke(PersistenceExceptionTranslationInterceptor.java:138) ~[spring-tx-6.2.5.jar:6.2.5]
         ... 115 common frames omitted
+Caused by: org.hibernate.ObjectDeletedException: deleted instance passed to merge: [ptithcm.edu.pharmacy.entity.ShoppingCartItem#<null>]
+        at org.hibernate.event.internal.DefaultMergeEventListener.merge(DefaultMergeEventListener.java:238) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.event.internal.DefaultMergeEventListener.doMerge(DefaultMergeEventListener.java:152) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.event.internal.DefaultMergeEventListener.onMerge(DefaultMergeEventListener.java:136) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.event.service.internal.EventListenerGroupImpl.fireEventOnEachListener(EventListenerGroupImpl.java:138) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.internal.SessionImpl.fireMerge(SessionImpl.java:875) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        ... 163 common frames omitted
+
+2025-04-28T10:10:59.504+07:00 DEBUG 67719 --- [pharmacy] [nio-8080-exec-5] org.hibernate.SQL                        : 
+    select
+        u1_0.user_id,
+        u1_0.address,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.email,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.is_active,
+        u1_0.last_login,
+        u1_0.password_hash,
+        u1_0.phone_number,
+        u1_0.updated_at 
+    from
+        Users u1_0 
+    where
+        u1_0.phone_number=?
+Hibernate: 
+    select
+        u1_0.user_id,
+        u1_0.address,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.email,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.is_active,
+        u1_0.last_login,
+        u1_0.password_hash,
+        u1_0.phone_number,
+        u1_0.updated_at 
+    from
+        Users u1_0 
+    where
+        u1_0.phone_number=?
+2025-04-28T10:10:59.518+07:00 DEBUG 67719 --- [pharmacy] [nio-8080-exec-5] org.hibernate.SQL                        : 
+    select
+        r1_0.user_id,
+        r1_1.role_id,
+        r1_1.description,
+        r1_1.role_name 
+    from
+        User_Roles r1_0 
+    join
+        Roles r1_1 
+            on r1_1.role_id=r1_0.role_id 
+    where
+        r1_0.user_id=?
+Hibernate: 
+    select
+        r1_0.user_id,
+        r1_1.role_id,
+        r1_1.description,
+        r1_1.role_name 
+    from
+        User_Roles r1_0 
+    join
+        Roles r1_1 
+            on r1_1.role_id=r1_0.role_id 
+    where
+        r1_0.user_id=?
+2025-04-28T10:10:59.569+07:00  INFO 67719 --- [pharmacy] [nio-8080-exec-5] p.e.p.controller.ShoppingCartController  : Received request to remove cart item ID: 16 for user: 0987351477
+2025-04-28T10:10:59.579+07:00 DEBUG 67719 --- [pharmacy] [nio-8080-exec-5] org.hibernate.SQL                        : 
+    select
+        u1_0.user_id,
+        u1_0.address,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.email,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.is_active,
+        u1_0.last_login,
+        u1_0.password_hash,
+        u1_0.phone_number,
+        u1_0.updated_at 
+    from
+        Users u1_0 
+    where
+        u1_0.phone_number=?
+Hibernate: 
+    select
+        u1_0.user_id,
+        u1_0.address,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.email,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.is_active,
+        u1_0.last_login,
+        u1_0.password_hash,
+        u1_0.phone_number,
+        u1_0.updated_at 
+    from
+        Users u1_0 
+    where
+        u1_0.phone_number=?
+2025-04-28T10:10:59.602+07:00  INFO 67719 --- [pharmacy] [nio-8080-exec-5] p.e.p.s.impl.ShoppingCartServiceImpl     : Attempting to remove cart item ID: 16 for user ID: 3
+2025-04-28T10:10:59.612+07:00 DEBUG 67719 --- [pharmacy] [nio-8080-exec-5] org.hibernate.SQL                        : 
+    select
+        sci1_0.cart_item_id,
+        sci1_0.added_at,
+        sci1_0.cart_id,
+        sci1_0.inventory_id,
+        sci1_0.quantity 
+    from
+        Shopping_Cart_Items sci1_0 
+    left join
+        Shopping_Carts c1_0 
+            on c1_0.cart_id=sci1_0.cart_id 
+    left join
+        Users u1_0 
+            on u1_0.user_id=c1_0.user_id 
+    where
+        sci1_0.cart_item_id=? 
+        and u1_0.user_id=?
+Hibernate: 
+    select
+        sci1_0.cart_item_id,
+        sci1_0.added_at,
+        sci1_0.cart_id,
+        sci1_0.inventory_id,
+        sci1_0.quantity 
+    from
+        Shopping_Cart_Items sci1_0 
+    left join
+        Shopping_Carts c1_0 
+            on c1_0.cart_id=sci1_0.cart_id 
+    left join
+        Users u1_0 
+            on u1_0.user_id=c1_0.user_id 
+    where
+        sci1_0.cart_item_id=? 
+        and u1_0.user_id=?
+2025-04-28T10:10:59.652+07:00 DEBUG 67719 --- [pharmacy] [nio-8080-exec-5] org.hibernate.SQL                        : 
+    select
+        sc1_0.cart_id,
+        sc1_0.branch_id,
+        sc1_0.created_at,
+        sc1_0.updated_at,
+        sc1_0.user_id,
+        u1_0.user_id,
+        u1_0.address,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.email,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.is_active,
+        u1_0.last_login,
+        u1_0.password_hash,
+        u1_0.phone_number,
+        u1_0.updated_at 
+    from
+        Shopping_Carts sc1_0 
+    join
+        Users u1_0 
+            on u1_0.user_id=sc1_0.user_id 
+    where
+        sc1_0.cart_id=?
+Hibernate: 
+    select
+        sc1_0.cart_id,
+        sc1_0.branch_id,
+        sc1_0.created_at,
+        sc1_0.updated_at,
+        sc1_0.user_id,
+        u1_0.user_id,
+        u1_0.address,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.email,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.is_active,
+        u1_0.last_login,
+        u1_0.password_hash,
+        u1_0.phone_number,
+        u1_0.updated_at 
+    from
+        Shopping_Carts sc1_0 
+    join
+        Users u1_0 
+            on u1_0.user_id=sc1_0.user_id 
+    where
+        sc1_0.cart_id=?
+2025-04-28T10:10:59.656+07:00 DEBUG 67719 --- [pharmacy] [nio-8080-exec-5] org.hibernate.SQL                        : 
+    select
+        ci1_0.cart_id,
+        ci1_0.cart_item_id,
+        ci1_0.added_at,
+        ci1_0.inventory_id,
+        ci1_0.quantity 
+    from
+        Shopping_Cart_Items ci1_0 
+    where
+        ci1_0.cart_id=?
+Hibernate: 
+    select
+        ci1_0.cart_id,
+        ci1_0.cart_item_id,
+        ci1_0.added_at,
+        ci1_0.inventory_id,
+        ci1_0.quantity 
+    from
+        Shopping_Cart_Items ci1_0 
+    where
+        ci1_0.cart_id=?
+2025-04-28T10:10:59.660+07:00 DEBUG 67719 --- [pharmacy] [nio-8080-exec-5] org.hibernate.SQL                        : 
+    select
+        bi1_0.inventory_id,
+        bi1_0.batch_number,
+        bi1_0.branch_id,
+        b1_0.branch_id,
+        b1_0.address,
+        b1_0.created_at,
+        b1_0.is_active,
+        b1_0.latitude,
+        b1_0.longitude,
+        b1_0.name,
+        b1_0.operating_hours,
+        b1_0.phone_number,
+        b1_0.updated_at,
+        bi1_0.discount_price,
+        bi1_0.expiry_date,
+        bi1_0.last_updated,
+        bi1_0.location_in_store,
+        bi1_0.price,
+        bi1_0.product_id,
+        p1_0.product_id,
+        p1_0.average_rating,
+        p1_0.brand_id,
+        p1_0.category_id,
+        p1_0.contraindications,
+        p1_0.created_at,
+        p1_0.description,
+        p1_0.image_url,
+        p1_0.ingredients,
+        p1_0.is_prescription_required,
+        p1_0.manufacturer_id,
+        p1_0.name,
+        p1_0.packaging,
+        p1_0.review_count,
+        p1_0.side_effects,
+        p1_0.sku,
+        p1_0.slug,
+        p1_0.status,
+        p1_0.storage_conditions,
+        p1_0.unit,
+        p1_0.updated_at,
+        p1_0.usage_instructions,
+        bi1_0.quantity_on_hand 
+    from
+        Branch_Inventory bi1_0 
+    join
+        Branches b1_0 
+            on b1_0.branch_id=bi1_0.branch_id 
+    join
+        Products p1_0 
+            on p1_0.product_id=bi1_0.product_id 
+    where
+        bi1_0.inventory_id=?
+Hibernate: 
+    select
+        bi1_0.inventory_id,
+        bi1_0.batch_number,
+        bi1_0.branch_id,
+        b1_0.branch_id,
+        b1_0.address,
+        b1_0.created_at,
+        b1_0.is_active,
+        b1_0.latitude,
+        b1_0.longitude,
+        b1_0.name,
+        b1_0.operating_hours,
+        b1_0.phone_number,
+        b1_0.updated_at,
+        bi1_0.discount_price,
+        bi1_0.expiry_date,
+        bi1_0.last_updated,
+        bi1_0.location_in_store,
+        bi1_0.price,
+        bi1_0.product_id,
+        p1_0.product_id,
+        p1_0.average_rating,
+        p1_0.brand_id,
+        p1_0.category_id,
+        p1_0.contraindications,
+        p1_0.created_at,
+        p1_0.description,
+        p1_0.image_url,
+        p1_0.ingredients,
+        p1_0.is_prescription_required,
+        p1_0.manufacturer_id,
+        p1_0.name,
+        p1_0.packaging,
+        p1_0.review_count,
+        p1_0.side_effects,
+        p1_0.sku,
+        p1_0.slug,
+        p1_0.status,
+        p1_0.storage_conditions,
+        p1_0.unit,
+        p1_0.updated_at,
+        p1_0.usage_instructions,
+        bi1_0.quantity_on_hand 
+    from
+        Branch_Inventory bi1_0 
+    join
+        Branches b1_0 
+            on b1_0.branch_id=bi1_0.branch_id 
+    join
+        Products p1_0 
+            on p1_0.product_id=bi1_0.product_id 
+    where
+        bi1_0.inventory_id=?
+2025-04-28T10:10:59.669+07:00 DEBUG 67719 --- [pharmacy] [nio-8080-exec-5] org.hibernate.SQL                        : 
+    select
+        bi1_0.inventory_id,
+        bi1_0.batch_number,
+        bi1_0.branch_id,
+        b1_0.branch_id,
+        b1_0.address,
+        b1_0.created_at,
+        b1_0.is_active,
+        b1_0.latitude,
+        b1_0.longitude,
+        b1_0.name,
+        b1_0.operating_hours,
+        b1_0.phone_number,
+        b1_0.updated_at,
+        bi1_0.discount_price,
+        bi1_0.expiry_date,
+        bi1_0.last_updated,
+        bi1_0.location_in_store,
+        bi1_0.price,
+        bi1_0.product_id,
+        p1_0.product_id,
+        p1_0.average_rating,
+        p1_0.brand_id,
+        p1_0.category_id,
+        p1_0.contraindications,
+        p1_0.created_at,
+        p1_0.description,
+        p1_0.image_url,
+        p1_0.ingredients,
+        p1_0.is_prescription_required,
+        p1_0.manufacturer_id,
+        p1_0.name,
+        p1_0.packaging,
+        p1_0.review_count,
+        p1_0.side_effects,
+        p1_0.sku,
+        p1_0.slug,
+        p1_0.status,
+        p1_0.storage_conditions,
+        p1_0.unit,
+        p1_0.updated_at,
+        p1_0.usage_instructions,
+        bi1_0.quantity_on_hand 
+    from
+        Branch_Inventory bi1_0 
+    join
+        Branches b1_0 
+            on b1_0.branch_id=bi1_0.branch_id 
+    join
+        Products p1_0 
+            on p1_0.product_id=bi1_0.product_id 
+    where
+        bi1_0.inventory_id=?
+Hibernate: 
+    select
+        bi1_0.inventory_id,
+        bi1_0.batch_number,
+        bi1_0.branch_id,
+        b1_0.branch_id,
+        b1_0.address,
+        b1_0.created_at,
+        b1_0.is_active,
+        b1_0.latitude,
+        b1_0.longitude,
+        b1_0.name,
+        b1_0.operating_hours,
+        b1_0.phone_number,
+        b1_0.updated_at,
+        bi1_0.discount_price,
+        bi1_0.expiry_date,
+        bi1_0.last_updated,
+        bi1_0.location_in_store,
+        bi1_0.price,
+        bi1_0.product_id,
+        p1_0.product_id,
+        p1_0.average_rating,
+        p1_0.brand_id,
+        p1_0.category_id,
+        p1_0.contraindications,
+        p1_0.created_at,
+        p1_0.description,
+        p1_0.image_url,
+        p1_0.ingredients,
+        p1_0.is_prescription_required,
+        p1_0.manufacturer_id,
+        p1_0.name,
+        p1_0.packaging,
+        p1_0.review_count,
+        p1_0.side_effects,
+        p1_0.sku,
+        p1_0.slug,
+        p1_0.status,
+        p1_0.storage_conditions,
+        p1_0.unit,
+        p1_0.updated_at,
+        p1_0.usage_instructions,
+        bi1_0.quantity_on_hand 
+    from
+        Branch_Inventory bi1_0 
+    join
+        Branches b1_0 
+            on b1_0.branch_id=bi1_0.branch_id 
+    join
+        Products p1_0 
+            on p1_0.product_id=bi1_0.product_id 
+    where
+        bi1_0.inventory_id=?
+2025-04-28T10:10:59.677+07:00 ERROR 67719 --- [pharmacy] [nio-8080-exec-5] p.e.p.controller.ShoppingCartController  : Unexpected error removing cart item ID 16 for user 0987351477: org.hibernate.ObjectDeletedException: deleted instance passed to merge: [ptithcm.edu.pharmacy.entity.ShoppingCartItem#<null>]
+
+org.springframework.dao.InvalidDataAccessApiUsageException: org.hibernate.ObjectDeletedException: deleted instance passed to merge: [ptithcm.edu.pharmacy.entity.ShoppingCartItem#<null>]
+        at org.springframework.orm.jpa.EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(EntityManagerFactoryUtils.java:371) ~[spring-orm-6.2.5.jar:6.2.5]
+        at org.springframework.orm.jpa.vendor.HibernateJpaDialect.translateExceptionIfPossible(HibernateJpaDialect.java:246) ~[spring-orm-6.2.5.jar:6.2.5]
+        at org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.translateExceptionIfPossible(AbstractEntityManagerFactoryBean.java:560) ~[spring-orm-6.2.5.jar:6.2.5]
+        at org.springframework.dao.support.ChainedPersistenceExceptionTranslator.translateExceptionIfPossible(ChainedPersistenceExceptionTranslator.java:61) ~[spring-tx-6.2.5.jar:6.2.5]
+        at org.springframework.dao.support.DataAccessUtils.translateIfNecessary(DataAccessUtils.java:343) ~[spring-tx-6.2.5.jar:6.2.5]
+        at org.springframework.dao.support.PersistenceExceptionTranslationInterceptor.invoke(PersistenceExceptionTranslationInterceptor.java:160) ~[spring-tx-6.2.5.jar:6.2.5]
+        at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184) ~[spring-aop-6.2.5.jar:6.2.5]
+        at org.springframework.data.jpa.repository.support.CrudMethodMetadataPostProcessor$CrudMethodMetadataPopulatingMethodInterceptor.invoke(CrudMethodMetadataPostProcessor.java:165) ~[spring-data-jpa-3.4.4.jar:3.4.4]
+        at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184) ~[spring-aop-6.2.5.jar:6.2.5]
+        at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:223) ~[spring-aop-6.2.5.jar:6.2.5]
+        at jdk.proxy22/jdk.proxy22.$Proxy311.save(Unknown Source) ~[na:na]
+        at ptithcm.edu.pharmacy.service.impl.ShoppingCartServiceImpl.removeItemFromCart(ShoppingCartServiceImpl.java:360) ~[classes/:na]
+        at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
+        at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
+        at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:359) ~[spring-aop-6.2.5.jar:6.2.5]
+        at org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:196) ~[spring-aop-6.2.5.jar:6.2.5]
+        at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:163) ~[spring-aop-6.2.5.jar:6.2.5]
+        at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:380) ~[spring-tx-6.2.5.jar:6.2.5]
+        at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:119) ~[spring-tx-6.2.5.jar:6.2.5]
+        at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184) ~[spring-aop-6.2.5.jar:6.2.5]
+        at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:727) ~[spring-aop-6.2.5.jar:6.2.5]
+        at ptithcm.edu.pharmacy.service.impl.ShoppingCartServiceImpl$$SpringCGLIB$$0.removeItemFromCart(<generated>) ~[classes/:na]
+        at ptithcm.edu.pharmacy.controller.ShoppingCartController.removeCartItem(ShoppingCartController.java:176) ~[classes/:na]
+        at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
+        at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
+        at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:258) ~[spring-web-6.2.5.jar:6.2.5]
+        at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:191) ~[spring-web-6.2.5.jar:6.2.5]
+        at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:118) ~[spring-webmvc-6.2.5.jar:6.2.5]
+        at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:986) ~[spring-webmvc-6.2.5.jar:6.2.5]
+        at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:891) ~[spring-webmvc-6.2.5.jar:6.2.5]
+        at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87) ~[spring-webmvc-6.2.5.jar:6.2.5]
+        at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1089) ~[spring-webmvc-6.2.5.jar:6.2.5]
+        at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:979) ~[spring-webmvc-6.2.5.jar:6.2.5]
+        at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014) ~[spring-webmvc-6.2.5.jar:6.2.5]
+        at org.springframework.web.servlet.FrameworkServlet.doDelete(FrameworkServlet.java:936) ~[spring-webmvc-6.2.5.jar:6.2.5]
+        at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:596) ~[tomcat-embed-core-10.1.39.jar:6.0]
+        at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885) ~[spring-webmvc-6.2.5.jar:6.2.5]
+        at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658) ~[tomcat-embed-core-10.1.39.jar:6.0]
+        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:195) ~[tomcat-embed-core-10.1.39.jar:10.1.39]
+        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.39.jar:10.1.39]
+        at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51) ~[tomcat-embed-websocket-10.1.39.jar:10.1.39]
+        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.39.jar:10.1.39]
+        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.39.jar:10.1.39]
+        at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:110) ~[spring-web-6.2.5.jar:6.2.5]
+        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.39.jar:10.1.39]
+        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.39.jar:10.1.39]
+        at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:108) ~[spring-web-6.2.5.jar:6.2.5]
+        at org.springframework.security.web.FilterChainProxy.lambda$doFilterInternal$3(FilterChainProxy.java:231) ~[spring-security-web-6.4.4.jar:6.4.4]
+        at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:365) ~[spring-security-web-6.4.4.jar:6.4.4]
+        at org.springframework.security.web.access.intercept.AuthorizationFilter.doFilter(AuthorizationFilter.java:101) ~[spring-security-web-6.4.4.jar:6.4.4]
+        at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.4.4.jar:6.4.4]
+        at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:126) ~[spring-security-web-6.4.4.jar:6.4.4]
+        at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:120) ~[spring-security-web-6.4.4.jar:6.4.4]
+        at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.4.4.jar:6.4.4]
+        at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:131) ~[spring-security-web-6.4.4.jar:6.4.4]
+        at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:85) ~[spring-security-web-6.4.4.jar:6.4.4]
+        at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.4.4.jar:6.4.4]
+        at org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:100) ~[spring-security-web-6.4.4.jar:6.4.4]
+        at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.4.4.jar:6.4.4]
+        at org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:179) ~[spring-security-web-6.4.4.jar:6.4.4]
+        at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.4.4.jar:6.4.4]
+        at org.springframework.security.web.savedrequest.RequestCacheAwareFilter.doFilter(RequestCacheAwareFilter.java:63) ~[spring-security-web-6.4.4.jar:6.4.4]
+        at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.4.4.jar:6.4.4]
+        at ptithcm.edu.pharmacy.security.JwtAuthenticationFilter.doFilterInternal(JwtAuthenticationFilter.java:46) ~[classes/:na]
+        at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.5.jar:6.2.5]
+        at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.4.4.jar:6.4.4]
+        at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:107) ~[spring-security-web-6.4.4.jar:6.4.4]
+        at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:93) ~[spring-security-web-6.4.4.jar:6.4.4]
+        at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.4.4.jar:6.4.4]
+        at org.springframework.security.web.header.HeaderWriterFilter.doHeadersAfter(HeaderWriterFilter.java:90) ~[spring-security-web-6.4.4.jar:6.4.4]
+        at org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:75) ~[spring-security-web-6.4.4.jar:6.4.4]
+        at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.5.jar:6.2.5]
+        at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.4.4.jar:6.4.4]
+        at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:82) ~[spring-security-web-6.4.4.jar:6.4.4]
+        at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:69) ~[spring-security-web-6.4.4.jar:6.4.4]
+        at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.4.4.jar:6.4.4]
+        at org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:62) ~[spring-security-web-6.4.4.jar:6.4.4]
+        at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.5.jar:6.2.5]
+        at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.4.4.jar:6.4.4]
+        at org.springframework.security.web.session.DisableEncodeUrlFilter.doFilterInternal(DisableEncodeUrlFilter.java:42) ~[spring-security-web-6.4.4.jar:6.4.4]
+        at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.5.jar:6.2.5]
+        at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.4.4.jar:6.4.4]
+        at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:233) ~[spring-security-web-6.4.4.jar:6.4.4]
+        at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:191) ~[spring-security-web-6.4.4.jar:6.4.4]
+        at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113) ~[spring-web-6.2.5.jar:6.2.5]
+        at org.springframework.web.servlet.handler.HandlerMappingIntrospector.lambda$createCacheFilter$3(HandlerMappingIntrospector.java:243) ~[spring-webmvc-6.2.5.jar:6.2.5]
+        at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113) ~[spring-web-6.2.5.jar:6.2.5]
+        at org.springframework.web.filter.CompositeFilter.doFilter(CompositeFilter.java:74) ~[spring-web-6.2.5.jar:6.2.5]
+        at org.springframework.security.config.annotation.web.configuration.WebMvcSecurityConfiguration$CompositeFilterChainProxy.doFilter(WebMvcSecurityConfiguration.java:238) ~[spring-security-config-6.4.4.jar:6.4.4]
+        at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:362) ~[spring-web-6.2.5.jar:6.2.5]
+        at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:278) ~[spring-web-6.2.5.jar:6.2.5]
+        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.39.jar:10.1.39]
+        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.39.jar:10.1.39]
+        at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100) ~[spring-web-6.2.5.jar:6.2.5]
+        at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.5.jar:6.2.5]
+        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.39.jar:10.1.39]
+        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.39.jar:10.1.39]
+        at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93) ~[spring-web-6.2.5.jar:6.2.5]
+        at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.5.jar:6.2.5]
+        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.39.jar:10.1.39]
+        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.39.jar:10.1.39]
+        at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201) ~[spring-web-6.2.5.jar:6.2.5]
+        at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.5.jar:6.2.5]
+        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.39.jar:10.1.39]
+        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.39.jar:10.1.39]
+        at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167) ~[tomcat-embed-core-10.1.39.jar:10.1.39]
+        at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90) ~[tomcat-embed-core-10.1.39.jar:10.1.39]
+        at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:483) ~[tomcat-embed-core-10.1.39.jar:10.1.39]
+        at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:115) ~[tomcat-embed-core-10.1.39.jar:10.1.39]
+        at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93) ~[tomcat-embed-core-10.1.39.jar:10.1.39]
+        at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74) ~[tomcat-embed-core-10.1.39.jar:10.1.39]
+        at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344) ~[tomcat-embed-core-10.1.39.jar:10.1.39]
+        at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:397) ~[tomcat-embed-core-10.1.39.jar:10.1.39]
+        at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63) ~[tomcat-embed-core-10.1.39.jar:10.1.39]
+        at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:905) ~[tomcat-embed-core-10.1.39.jar:10.1.39]
+        at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1743) ~[tomcat-embed-core-10.1.39.jar:10.1.39]
+        at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52) ~[tomcat-embed-core-10.1.39.jar:10.1.39]
+        at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1190) ~[tomcat-embed-core-10.1.39.jar:10.1.39]
+        at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659) ~[tomcat-embed-core-10.1.39.jar:10.1.39]
+        at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63) ~[tomcat-embed-core-10.1.39.jar:10.1.39]
+        at java.base/java.lang.Thread.run(Thread.java:1583) ~[na:na]
+Caused by: java.lang.IllegalArgumentException: org.hibernate.ObjectDeletedException: deleted instance passed to merge: [ptithcm.edu.pharmacy.entity.ShoppingCartItem#<null>]
+        at org.hibernate.internal.SessionImpl.fireMerge(SessionImpl.java:878) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.internal.SessionImpl.merge(SessionImpl.java:846) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.engine.spi.CascadingActions$6.cascade(CascadingActions.java:258) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.engine.spi.CascadingActions$6.cascade(CascadingActions.java:248) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.engine.internal.Cascade.cascadeToOne(Cascade.java:570) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.engine.internal.Cascade.cascadeAssociation(Cascade.java:492) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.engine.internal.Cascade.cascadeProperty(Cascade.java:253) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.engine.internal.Cascade.cascadeCollectionElements(Cascade.java:604) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.engine.internal.Cascade.cascadeCollection(Cascade.java:534) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.engine.internal.Cascade.cascadeAssociation(Cascade.java:495) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.engine.internal.Cascade.cascadeProperty(Cascade.java:253) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.engine.internal.Cascade.cascade(Cascade.java:192) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.event.internal.DefaultMergeEventListener.cascadeOnMerge(DefaultMergeEventListener.java:667) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.event.internal.DefaultMergeEventListener.entityIsPersistent(DefaultMergeEventListener.java:285) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.event.internal.DefaultMergeEventListener.merge(DefaultMergeEventListener.java:220) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.event.internal.DefaultMergeEventListener.doMerge(DefaultMergeEventListener.java:152) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.event.internal.DefaultMergeEventListener.onMerge(DefaultMergeEventListener.java:121) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.event.internal.DefaultMergeEventListener.onMerge(DefaultMergeEventListener.java:89) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.event.service.internal.EventListenerGroupImpl.fireEventOnEachListener(EventListenerGroupImpl.java:127) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.internal.SessionImpl.fireMerge(SessionImpl.java:854) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.internal.SessionImpl.merge(SessionImpl.java:840) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
+        at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
+        at org.springframework.orm.jpa.ExtendedEntityManagerCreator$ExtendedEntityManagerInvocationHandler.invoke(ExtendedEntityManagerCreator.java:364) ~[spring-orm-6.2.5.jar:6.2.5]
+        at jdk.proxy22/jdk.proxy22.$Proxy298.merge(Unknown Source) ~[na:na]
+        at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
+        at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
+        at org.springframework.orm.jpa.SharedEntityManagerCreator$SharedEntityManagerInvocationHandler.invoke(SharedEntityManagerCreator.java:320) ~[spring-orm-6.2.5.jar:6.2.5]
+        at jdk.proxy22/jdk.proxy22.$Proxy298.merge(Unknown Source) ~[na:na]
+        at org.springframework.data.jpa.repository.support.SimpleJpaRepository.save(SimpleJpaRepository.java:639) ~[spring-data-jpa-3.4.4.jar:3.4.4]
+        at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
+        at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
+        at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:359) ~[spring-aop-6.2.5.jar:6.2.5]
+        at org.springframework.data.repository.core.support.RepositoryMethodInvoker$RepositoryFragmentMethodInvoker.lambda$new$0(RepositoryMethodInvoker.java:277) ~[spring-data-commons-3.4.4.jar:3.4.4]
+        at org.springframework.data.repository.core.support.RepositoryMethodInvoker.doInvoke(RepositoryMethodInvoker.java:170) ~[spring-data-commons-3.4.4.jar:3.4.4]
+        at org.springframework.data.repository.core.support.RepositoryMethodInvoker.invoke(RepositoryMethodInvoker.java:158) ~[spring-data-commons-3.4.4.jar:3.4.4]
+        at org.springframework.data.repository.core.support.RepositoryComposition$RepositoryFragments.invoke(RepositoryComposition.java:515) ~[spring-data-commons-3.4.4.jar:3.4.4]
+        at org.springframework.data.repository.core.support.RepositoryComposition.invoke(RepositoryComposition.java:284) ~[spring-data-commons-3.4.4.jar:3.4.4]
+        at org.springframework.data.repository.core.support.RepositoryFactorySupport$ImplementationMethodExecutionInterceptor.invoke(RepositoryFactorySupport.java:731) ~[spring-data-commons-3.4.4.jar:3.4.4]
+        at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184) ~[spring-aop-6.2.5.jar:6.2.5]
+        at org.springframework.data.repository.core.support.QueryExecutorMethodInterceptor.doInvoke(QueryExecutorMethodInterceptor.java:174) ~[spring-data-commons-3.4.4.jar:3.4.4]
+        at org.springframework.data.repository.core.support.QueryExecutorMethodInterceptor.invoke(QueryExecutorMethodInterceptor.java:149) ~[spring-data-commons-3.4.4.jar:3.4.4]
+        at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184) ~[spring-aop-6.2.5.jar:6.2.5]
+        at org.springframework.data.projection.DefaultMethodInvokingMethodInterceptor.invoke(DefaultMethodInvokingMethodInterceptor.java:69) ~[spring-data-commons-3.4.4.jar:3.4.4]
+        at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184) ~[spring-aop-6.2.5.jar:6.2.5]
+        at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:380) ~[spring-tx-6.2.5.jar:6.2.5]
+        at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:119) ~[spring-tx-6.2.5.jar:6.2.5]
+        at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184) ~[spring-aop-6.2.5.jar:6.2.5]
+        at org.springframework.dao.support.PersistenceExceptionTranslationInterceptor.invoke(PersistenceExceptionTranslationInterceptor.java:138) ~[spring-tx-6.2.5.jar:6.2.5]
+        ... 115 common frames omitted
+Caused by: org.hibernate.ObjectDeletedException: deleted instance passed to merge: [ptithcm.edu.pharmacy.entity.ShoppingCartItem#<null>]
+        at org.hibernate.event.internal.DefaultMergeEventListener.merge(DefaultMergeEventListener.java:238) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.event.internal.DefaultMergeEventListener.doMerge(DefaultMergeEventListener.java:152) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.event.internal.DefaultMergeEventListener.onMerge(DefaultMergeEventListener.java:136) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.event.service.internal.EventListenerGroupImpl.fireEventOnEachListener(EventListenerGroupImpl.java:138) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        at org.hibernate.internal.SessionImpl.fireMerge(SessionImpl.java:875) ~[hibernate-core-6.6.11.Final.jar:6.6.11.Final]
+        ... 163 common frames omitted
 

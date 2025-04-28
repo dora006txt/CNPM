@@ -9,13 +9,15 @@ import ptithcm.edu.pharmacy.dto.*;
 import ptithcm.edu.pharmacy.entity.*;
 import ptithcm.edu.pharmacy.entity.Branch; // Import Branch
 import ptithcm.edu.pharmacy.repository.*;
+import ptithcm.edu.pharmacy.repository.ShoppingCartItemRepository; // Add this import
 import ptithcm.edu.pharmacy.service.ShoppingCartService;
 import ptithcm.edu.pharmacy.service.exception.InsufficientStockException;
 
 import java.time.LocalDateTime;
 import java.util.List; // Make sure List is imported
 import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.Collections; // Add this import
+import java.util.stream.Collectors; // Add this import
 
 @Service
 @RequiredArgsConstructor
@@ -25,7 +27,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     private final ShoppingCartRepository cartRepository;
     private final UserRepository userRepository;
     private final BranchInventoryRepository inventoryRepository;
-    // Assuming ShoppingCartItemRepository exists or is managed via cascade
+    private final ShoppingCartItemRepository cartItemRepository; // Inject Cart Item Repo
 
     @Override
     @Transactional
@@ -150,6 +152,24 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         return mapToShoppingCartDTO(savedCart);
     }
 
+    @Override
+    @Transactional(readOnly = true) // Use read-only transaction for fetching data
+    public List<ShoppingCartDTO> getCartsByUserId(Integer userId) {
+        log.debug("Fetching all carts for userId: {}", userId);
+        List<ShoppingCart> carts = cartRepository.findByUser_UserId(userId);
+
+        if (carts.isEmpty()) {
+            log.debug("No carts found for userId: {}", userId);
+            return Collections.emptyList(); // Return empty list if no carts found
+        }
+
+        log.debug("Found {} carts for userId: {}. Mapping to DTOs.", carts.size(), userId);
+        // Map each ShoppingCart entity to its DTO representation
+        return carts.stream()
+                .map(this::mapToShoppingCartDTO) // Use the existing helper method
+                .collect(Collectors.toList());
+    }
+
     // Modify createNewCart to accept Branch
     private ShoppingCart createNewCart(User user, Branch branch) {
         ShoppingCart newCart = new ShoppingCart();
@@ -182,47 +202,57 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 
     // --- Helper methods to map Entities to DTOs ---
 
-    // Update mapToShoppingCartDTO to include branchId
+    // Update mapToShoppingCartDTO to include branchId and potentially branch name
     private ShoppingCartDTO mapToShoppingCartDTO(ShoppingCart cart) {
         List<ShoppingCartItemDTO> itemDTOs = new java.util.ArrayList<>();
         if (cart != null && cart.getCartItems() != null) {
             itemDTOs = cart.getCartItems().stream()
-                    .map(this::mapToShoppingCartItemDTO)
+                    .map(this::mapToShoppingCartItemDTO) // This method needs refinement
                     .collect(Collectors.toList());
         }
 
-        Integer userId = (cart != null && cart.getUser() != null) ? cart.getUser().getUserId() : null;
-        Integer branchId = (cart != null && cart.getBranch() != null) ? cart.getBranch().getBranchId() : null; // Get branchId
+        ShoppingCartDTO dto = new ShoppingCartDTO();
+        dto.setCartId(cart.getCartId());
+        dto.setUserId(cart.getUser() != null ? cart.getUser().getUserId() : null);
+        // Include branch details in the cart DTO
+        if (cart.getBranch() != null) {
+            dto.setBranchId(cart.getBranch().getBranchId());
+            dto.setBranchName(cart.getBranch().getName()); // Add branch name if needed
+        }
+        dto.setItems(itemDTOs);
+        dto.setCreatedAt(cart.getCreatedAt());
+        dto.setUpdatedAt(cart.getUpdatedAt());
 
-        return ShoppingCartDTO.builder()
-                .cartId(cart != null ? cart.getCartId() : null)
-                .userId(userId)
-                .branchId(branchId) // Add branchId to DTO
-                .cartItems(itemDTOs)
-                .createdAt(cart != null ? cart.getCreatedAt() : null)
-                .updatedAt(cart != null ? cart.getUpdatedAt() : null)
-                .build();
+        // Calculate total price (optional, can be done on frontend too)
+        // double totalPrice = itemDTOs.stream().mapToDouble(item -> item.getPrice() * item.getQuantity()).sum();
+        // dto.setTotalPrice(totalPrice);
+
+        return dto;
     }
 
-    // mapToShoppingCartItemDTO and mapToProductCartItemDTO remain the same
+    // Refine mapToShoppingCartItemDTO to include product details
     private ShoppingCartItemDTO mapToShoppingCartItemDTO(ShoppingCartItem item) {
-        // Perform null checks for safety
-        BranchInventory inventory = (item != null) ? item.getInventory() : null;
-        Product product = (inventory != null) ? inventory.getProduct() : null;
-        Integer inventoryId = (inventory != null) ? inventory.getInventoryId() : null;
+        ShoppingCartItemDTO dto = new ShoppingCartItemDTO();
+        dto.setCartItemId(item.getCartItemId());
+        dto.setQuantity(item.getQuantity());
+        dto.setAddedAt(item.getAddedAt());
 
-        ProductCartItemDTO productDTO = null;
-        if (product != null && inventory != null) {
-             productDTO = mapToProductCartItemDTO(product, inventory);
+        if (item.getInventory() != null) {
+            BranchInventory inventory = item.getInventory();
+            dto.setInventoryId(inventory.getInventoryId());
+            // Assuming price is stored in BranchInventory, adjust if it's on Product
+            dto.setPrice(inventory.getPrice()); // Or inventory.getSellingPrice(), etc.
+
+            if (inventory.getProduct() != null) {
+                Product product = inventory.getProduct();
+                dto.setProductId(product.getId());
+                dto.setProductName(product.getName());
+                dto.setProductImageUrl(product.getImageUrl()); // Add image URL
+                // Add any other product details needed for display (e.g., unit)
+                dto.setUnit(product.getUnit());
+            }
         }
-
-        return ShoppingCartItemDTO.builder()
-                .cartItemId(item != null ? item.getCartItemId() : null)
-                .inventoryId(inventoryId) // Use Integer ID from BranchInventory
-                .product(productDTO)
-                .quantity(item != null ? item.getQuantity() : null)
-                .addedAt(item != null ? item.getAddedAt() : null)
-                .build();
+        return dto;
     }
 
     private ProductCartItemDTO mapToProductCartItemDTO(Product product, BranchInventory inventory) {
@@ -234,5 +264,103 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
                 .price(inventory.getPrice()) // Or getDiscountPrice() based on your logic
                 .unit(product.getUnit()) // Assuming Product has a unit field
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public ShoppingCartDTO updateItemQuantity(Integer userId, Integer cartItemId, int newQuantity) {
+        log.info("Attempting to update cart item ID: {} for user ID: {} to quantity: {}", cartItemId, userId, newQuantity);
+
+        if (newQuantity <= 0) {
+            log.warn("Invalid quantity provided for update: {}", newQuantity);
+            throw new IllegalArgumentException("Quantity must be greater than 0.");
+        }
+
+        // 1. Find the cart item and verify ownership
+        ShoppingCartItem cartItem = cartItemRepository.findByCartItemIdAndCart_User_UserId(cartItemId, userId)
+                .orElseThrow(() -> {
+                    log.warn("Cart item ID: {} not found or does not belong to user ID: {}", cartItemId, userId);
+                    return new EntityNotFoundException("Cart item not found or access denied.");
+                });
+
+        log.debug("Found cart item ID: {} belonging to user ID: {}", cartItemId, userId);
+        BranchInventory inventoryItem = cartItem.getInventory();
+        if (inventoryItem == null) {
+            // Should not happen with proper data integrity, but good to check
+            log.error("Cart item ID: {} is missing inventory link.", cartItemId);
+            throw new IllegalStateException("Cart item data is inconsistent.");
+        }
+
+        // 2. Check stock for the new quantity
+        log.debug("Checking stock for inventory ID: {}. Available: {}, Requested: {}", inventoryItem.getInventoryId(), inventoryItem.getQuantityOnHand(), newQuantity);
+        if (inventoryItem.getQuantityOnHand() < newQuantity) {
+            log.warn("Insufficient stock for inventory ID: {} for requested quantity: {}. Available: {}", inventoryItem.getInventoryId(), newQuantity, inventoryItem.getQuantityOnHand());
+            throw new InsufficientStockException("Insufficient stock for product ID " + inventoryItem.getProduct().getId() +
+                    ". Requested: " + newQuantity + ", Available: " + inventoryItem.getQuantityOnHand());
+        }
+
+        // 3. Update quantity and timestamp
+        cartItem.setQuantity(newQuantity);
+        cartItem.setAddedAt(LocalDateTime.now()); // Or add an 'updatedAt' field to ShoppingCartItem
+        // Also update the parent cart's timestamp
+        ShoppingCart cart = cartItem.getCart();
+        cart.setUpdatedAt(LocalDateTime.now());
+
+        // 4. Save changes (Cart update cascades from item save if configured, or save cart explicitly)
+        // Saving the item might be enough if cascade is set correctly. Saving the cart ensures its timestamp is updated.
+        cartItemRepository.save(cartItem);
+        ShoppingCart savedCart = cartRepository.save(cart); // Ensure cart timestamp is saved
+
+        log.info("Successfully updated quantity for cart item ID: {} to {}", cartItemId, newQuantity);
+
+        // 5. Return updated cart DTO
+        return mapToShoppingCartDTO(savedCart);
+    }
+
+    @Override
+    @Transactional
+    public ShoppingCartDTO removeItemFromCart(Integer userId, Integer cartItemId) {
+        log.info("Attempting to remove cart item ID: {} for user ID: {}", cartItemId, userId);
+
+        // 1. Find the cart item and verify ownership
+        ShoppingCartItem cartItem = cartItemRepository.findByCartItemIdAndCart_User_UserId(cartItemId, userId)
+                .orElseThrow(() -> {
+                    log.warn("Cart item ID: {} not found or does not belong to user ID: {}", cartItemId, userId);
+                    return new EntityNotFoundException("Cart item not found or access denied.");
+                });
+
+        log.debug("Found cart item ID: {} belonging to user ID: {}. Proceeding with removal.", cartItemId, userId);
+        ShoppingCart cart = cartItem.getCart();
+
+        // Remove the item from the cart's collection to avoid ObjectDeletedException
+        if (cart.getCartItems() != null) {
+            cart.getCartItems().remove(cartItem);
+        }
+
+        // Now delete the item from the repository
+        cartItemRepository.delete(cartItem);
+        log.debug("Deleted cart item ID: {}", cartItemId);
+
+        // 3. Refresh the cart entity from the database to get the updated state
+        Optional<ShoppingCart> refreshedCartOpt = cartRepository.findById(cart.getCartId());
+    
+        if (refreshedCartOpt.isPresent()) {
+            ShoppingCart refreshedCart = refreshedCartOpt.get();
+            // 4. Check if the cart is now empty
+            if (refreshedCart.getCartItems() == null || refreshedCart.getCartItems().isEmpty()) {
+                log.info("Cart ID: {} is now empty after removing item ID: {}. Deleting cart.", refreshedCart.getCartId(), cartItemId);
+                cartRepository.delete(refreshedCart);
+                return null;
+            } else {
+                refreshedCart.setUpdatedAt(LocalDateTime.now());
+                ShoppingCart savedCart = cartRepository.save(refreshedCart);
+                return mapToShoppingCartDTO(savedCart);
+            }
+        } else {
+            // This case should ideally not happen if we start with a valid cartItem,
+            // but handles potential race conditions or unexpected states.
+            log.warn("Cart ID: {} could not be found after removing item ID: {}. It might have been deleted concurrently.", cart.getCartId(), cartItemId);
+            return null; // Cart is gone
+        }
     }
 }

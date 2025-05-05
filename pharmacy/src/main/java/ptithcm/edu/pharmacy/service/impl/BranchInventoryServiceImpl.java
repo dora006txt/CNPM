@@ -1,7 +1,6 @@
 package ptithcm.edu.pharmacy.service.impl;
 
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ptithcm.edu.pharmacy.dto.BranchInventoryDTO;
 import ptithcm.edu.pharmacy.entity.Branch;
@@ -29,7 +28,6 @@ public class BranchInventoryServiceImpl implements BranchInventoryService {
     private final BranchRepository branchRepository;
     private final ProductRepository productRepository;
 
-    @Autowired
     public BranchInventoryServiceImpl(BranchInventoryRepository inventoryRepository,
                                       BranchRepository branchRepository,
                                       ProductRepository productRepository) {

@@ -4,7 +4,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import ptithcm.edu.pharmacy.entity.Branch;
 
-import java.util.List;
 
 @Repository
 public interface BranchRepository extends JpaRepository<Branch, Integer> {

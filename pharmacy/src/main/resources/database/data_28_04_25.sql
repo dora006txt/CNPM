@@ -35,6 +35,7 @@ CREATE TABLE `Branch_Inventory` (
   `last_updated` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`inventory_id`),
   UNIQUE KEY `uk_branch_product_batch` (`branch_id`,`product_id`,`batch_number`,`expiry_date`),
+  UNIQUE KEY `uq_branch_product` (`branch_id`,`product_id`,`batch_number`),
   KEY `FK9a4huhi5hv9j0hup9u1k2dn4o` (`product_id`),
   CONSTRAINT `branch_inventory_ibfk_1` FOREIGN KEY (`branch_id`) REFERENCES `Branches` (`branch_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `branch_inventory_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `Products` (`product_id`) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -42,7 +43,7 @@ CREATE TABLE `Branch_Inventory` (
   CONSTRAINT `FK9a4huhi5hv9j0hup9u1k2dn4o` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`),
   CONSTRAINT `FK9xurfdhspy8efsvrc47g4jnyb` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`),
   CONSTRAINT `FKffshg46wk4rul1rj9090x8jd1` FOREIGN KEY (`branch_id`) REFERENCES `Branches` (`branch_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Quản lý tồn kho, giá, HSD theo từng chi nhánh';
+) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Quản lý tồn kho, giá, HSD theo từng chi nhánh';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -51,6 +52,7 @@ CREATE TABLE `Branch_Inventory` (
 
 LOCK TABLES `Branch_Inventory` WRITE;
 /*!40000 ALTER TABLE `Branch_Inventory` DISABLE KEYS */;
+INSERT INTO `Branch_Inventory` VALUES (1,1,5,150,125000.00,115000.00,'2024-12-31','BATCH-2023-001','Kệ A1, Tầng 2','2025-04-26 17:47:17'),(2,2,6,80,75000.50,NULL,'2024-06-30','BATCH-2023-205','Kệ B3, Tầng 1','2025-04-26 17:39:49'),(3,2,7,200,120000.00,110000.00,'2025-01-15','BATCH-2023-002','Kệ trung tâm','2025-04-26 17:40:12'),(5,3,9,45,250000.00,230000.00,'2023-12-15','BATCH-2022-308','Tủ lạnh dược phẩm','2025-04-26 17:41:11'),(6,5,10,60,78000.00,75000.00,'2024-07-20','BATCH-2023-205B','Kệ B1, Tầng 1','2025-04-26 17:41:30'),(7,6,11,90,130000.00,NULL,'2024-11-30','BATCH-2023-001A','Kệ A3','2025-04-26 17:41:47'),(8,7,12,30,350000.00,320000.00,'2025-03-15','BATCH-2023-517','Tủ bảo quản đặc biệt','2025-04-26 17:42:06'),(9,8,13,25,260000.00,NULL,'2023-11-30','BATCH-2022-308B','Tủ lạnh dược phẩm','2025-04-26 17:42:31'),(10,9,14,200,45000.00,42000.00,'2024-08-31','BATCH-2023-623','Kệ C4, Tầng 1','2025-04-26 17:42:47'),(11,1,15,150,125000.00,115000.00,'2024-12-31','BATCH-2023-001','Kệ A1, Tầng 2','2025-04-26 17:50:18'),(12,1,12,150,125000.00,115000.00,'2024-12-31','BATCH-2023-001','Kệ A1, Tầng 2','2025-04-26 17:50:23'),(14,1,6,150,125000.00,115000.00,'2024-12-31','BATCH-2023-001','Kệ A1, Tầng 2','2025-04-26 17:50:34'),(17,2,8,150,125000.00,115000.00,'2024-12-31','BATCH-2023-001','Kệ A1, Tầng 2','2025-04-26 17:50:56'),(18,3,8,150,125000.00,115000.00,'2024-12-31','BATCH-2023-001','Kệ A1, Tầng 2','2025-04-26 17:51:00'),(19,4,8,150,125000.00,115000.00,'2024-12-31','BATCH-2023-001','Kệ A1, Tầng 2','2025-04-26 17:51:02');
 /*!40000 ALTER TABLE `Branch_Inventory` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -108,7 +110,7 @@ CREATE TABLE `Branches` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`branch_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Danh sách các chi nhánh nhà thuốc';
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Danh sách các chi nhánh nhà thuốc';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -117,6 +119,7 @@ CREATE TABLE `Branches` (
 
 LOCK TABLES `Branches` WRITE;
 /*!40000 ALTER TABLE `Branches` DISABLE KEYS */;
+INSERT INTO `Branches` VALUES (1,'Nhà thuốc Hoàng Trung','111 Đường Bạch Đằng, Quận Bình Thạnh, TP.HCM','0906677889',10.80,106.72,'6:00 - 20:00 (Thứ 2 - Chủ Nhật)',1,NULL,NULL),(2,'Nhà thuốc Hồng Phúc','456 Đường Nguyễn Huệ, Quận 1, TP.HCM','0907654321',10.77,106.70,'8:00 - 21:00 (Thứ 2 - Thứ 7)',1,NULL,NULL),(3,'Nhà thuốc Gia Hân','789 Đường Cách Mạng Tháng 8, Quận 3, TP.HCM','0901122334',10.78,106.69,'24/7',0,NULL,NULL),(4,'Nhà thuốc Phương Thảo','321 Đường Lý Thường Kiệt, Quận 10, TP.HCM','0909988776',10.77,106.67,'6:00 - 23:00 (Hàng ngày)',1,NULL,NULL),(5,'Nhà thuốc Bảo An','654 Đường 3 Tháng 2, Quận 10, TP.HCM','0905544332',10.77,106.67,'7:30 - 20:30 (Thứ 2 - Chủ Nhật)',1,NULL,NULL),(6,'Nhà thuốc Tâm Đức','555 Đường Trường Chinh, Quận Tân Bình, TP.HCM','0907894561',10.80,106.65,'7:00 - 23:00 (Thứ 2 - Chủ Nhật)',1,NULL,NULL),(7,'Nhà thuốc Hòa Bình','444 Đường Lê Quang Định, Quận Bình Thạnh, TP.HCM','0904561237',10.81,106.72,'6:30 - 22:00 (Hàng ngày)',1,NULL,NULL),(8,'Nhà thuốc An Khang','333 Đường Nguyễn Thị Minh Khai, Quận 3, TP.HCM','0901239876',10.78,106.69,'8:30 - 21:30 (Hàng ngày)',0,NULL,NULL),(9,'Nhà thuốc Thiên Phú','222 Đường Lê Văn Việt, Quận 9, TP.HCM','0909876543',10.84,106.79,'7:00 - 19:00 (Thứ 2 - Thứ 6)',1,NULL,NULL);
 /*!40000 ALTER TABLE `Branches` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -675,7 +678,7 @@ CREATE TABLE `Products` (
   CONSTRAINT `products_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `Categories` (`category_id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `products_ibfk_2` FOREIGN KEY (`brand_id`) REFERENCES `Brands` (`brand_id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `products_ibfk_3` FOREIGN KEY (`manufacturer_id`) REFERENCES `Manufacturers` (`manufacturer_id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Thông tin chung về sản phẩm';
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Thông tin chung về sản phẩm';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -684,7 +687,7 @@ CREATE TABLE `Products` (
 
 LOCK TABLES `Products` WRITE;
 /*!40000 ALTER TABLE `Products` DISABLE KEYS */;
-INSERT INTO `Products` VALUES (5,'Losartan 50mg','LOS-50-28TAB','Thuốc ức chế thụ thể angiotensin II, điều trị tăng huyết áp và bảo vệ thận ở bệnh nhân đái tháo đường','Losartan potassium 50mg','1 viên/ngày, uống vào buổi sáng. Có thể điều chỉnh liều theo chỉ định bác sĩ','Quá mẫn với Losartan, phụ nữ có thai','Chóng mặt, tăng kali máu, ho khan','Nhiệt độ phòng, tránh ánh sáng','Hộp 28 viên nén','viên','https://example.com/images/losartan.jpg',6,5,3,1,'DISCONTINUED','losartan-50mg',0.00,0,'2025-04-17 17:16:41','2025-04-17 17:16:41',1),(6,'Povidone Iodine 10%','PVI-10-500ML','Dung dịch sát khuẩn ngoài da, vết thương hở và chuẩn bị phẫu thuật','Povidone Iodine 10% w/v','Thấm dung dịch vào gạc vô trùng, lau nhẹ lên vùng da cần sát khuẩn. Không dùng cho vết thương sâu','Dị ứng với iod, bệnh tuyến giáp, phụ nữ có thai','Kích ứng da nhẹ, nhuộm màu da tạm thời','Đậy kín nắp, nhiệt độ dưới 25°C','Chai 500ml','chai','https://example.com/images/povidone-iodine.jpg',5,6,6,0,'ACTIVE','povidone-iodine-10',0.00,0,'2025-04-17 17:18:02','2025-04-17 17:18:02',1);
+INSERT INTO `Products` VALUES (5,'Losartan 50mg','LOS-50-28TAB','Thuốc ức chế thụ thể angiotensin II, điều trị tăng huyết áp và bảo vệ thận ở bệnh nhân đái tháo đường','Losartan potassium 50mg','1 viên/ngày, uống vào buổi sáng. Có thể điều chỉnh liều theo chỉ định bác sĩ','Quá mẫn với Losartan, phụ nữ có thai','Chóng mặt, tăng kali máu, ho khan','Nhiệt độ phòng, tránh ánh sáng','Hộp 28 viên nén','viên','https://example.com/images/losartan.jpg',6,5,3,1,'DISCONTINUED','losartan-50mg',0.00,0,'2025-04-17 17:16:41','2025-04-17 17:16:41',1),(6,'Povidone Iodine 10%','PVI-10-500ML','Dung dịch sát khuẩn ngoài da, vết thương hở và chuẩn bị phẫu thuật','Povidone Iodine 10% w/v','Thấm dung dịch vào gạc vô trùng, lau nhẹ lên vùng da cần sát khuẩn. Không dùng cho vết thương sâu','Dị ứng với iod, bệnh tuyến giáp, phụ nữ có thai','Kích ứng da nhẹ, nhuộm màu da tạm thời','Đậy kín nắp, nhiệt độ dưới 25°C','Chai 500ml','chai','https://example.com/images/povidone-iodine.jpg',5,6,6,0,'ACTIVE','povidone-iodine-10',0.00,0,'2025-04-17 17:18:02','2025-04-17 17:18:02',1),(7,'Paracetamol 500mg','PAR-500-10V','Thuốc giảm đau, hạ sốt','Paracetamol 500mg','Uống 1-2 viên mỗi 4-6 giờ khi cần, không quá 8 viên/ngày','Quá mẫn với paracetamol, suy gan nặng','Hiếm khi: buồn nôn, phát ban','Nơi khô ráo, nhiệt độ dưới 30°C','Vỉ 10 viên','vỉ','https://example.com/images/paracetamol.jpg',4,2,3,0,'ACTIVE','paracetamol-500mg',0.00,0,'2025-04-25 18:49:48','2025-04-25 18:49:48',1),(8,'Amoxicillin 500mg','AMX-500-12V','Kháng sinh điều trị nhiễm khuẩn','Amoxicillin trihydrate tương đương Amoxicillin 500mg','1 viên x 3 lần/ngày, uống cách nhau 8 giờ','Dị ứng penicillin, suy gan nặng','Tiêu chảy, phát ban, buồn nôn','Nhiệt độ dưới 25°C, tránh ẩm','Vỉ 12 viên','vỉ','https://example.com/images/amoxicillin.jpg',5,4,5,1,'ACTIVE','amoxicillin-500mg',0.00,0,'2025-04-25 18:50:00','2025-04-25 18:50:00',1),(9,'Vitamin C 1000mg','VITC-1000-60V','Bổ sung vitamin C tăng sức đề kháng','Ascorbic acid 1000mg','1 viên/ngày, uống sau ăn','Quá mẫn với thành phần','Tiêu chảy khi dùng liều cao','Nơi khô ráo, tránh ánh sáng','Lọ 60 viên','lọ','https://example.com/images/vitamin-c.jpg',6,1,2,0,'ACTIVE','vitamin-c-1000mg',0.00,0,'2025-04-25 18:50:11','2025-04-25 18:50:11',1),(10,'Omeprazole 20mg','OMP-20-14V','Thuốc điều trị viêm loét dạ dày','Omeprazole 20mg','1 viên/ngày trước bữa ăn sáng','Quá mẫn với omeprazole','Đau đầu, chóng mặt, rối loạn tiêu hóa','Nhiệt độ dưới 25°C','Vỉ 14 viên','vỉ','https://example.com/images/omeprazole.jpg',4,3,4,1,'ACTIVE','omeprazole-20mg',0.00,0,'2025-04-25 18:50:30','2025-04-25 18:50:30',1),(11,'Dizapram 10mg','DIZ-10-30V','Thuốc chống nôn, chống say tàu xe','Dimenhydrinate 10mg','Uống 1-2 viên trước khi đi tàu xe 30 phút, có thể lặp lại sau 4-6 giờ nếu cần','Trẻ em dưới 2 tuổi, bệnh nhân glaucoma góc đóng','Buồn ngủ, khô miệng','Nhiệt độ phòng, tránh ẩm','Vỉ 30 viên','vỉ','https://example.com/images/dizapram.jpg',6,7,8,0,'ACTIVE','dizapram-10mg',0.00,0,'2025-04-25 18:52:08','2025-04-25 18:52:08',1),(12,'Băng dán vết thương loại lớn','BDV-10x6CM-10C','Băng dán vô trùng cho vết thương nhỏ','Vải không dệt, keo y tế','Làm sạch vết thương trước khi dán, thay băng hàng ngày','Dị ứng với thành phần keo dính','Kích ứng da tại chỗ','Nơi khô ráo','Hộp 10 cái','hộp','https://example.com/images/bandaid.jpg',4,9,10,0,'ACTIVE','bang-dan-vet-thuong-loai-lon',0.00,0,'2025-04-25 18:52:24','2025-04-25 18:52:24',1),(13,'Atorvastatin 20mg','ATO-20-30V','Thuốc hạ mỡ máu nhóm statin','Atorvastatin calcium 20mg','1 viên/ngày vào buổi tối','Bệnh gan hoạt động, phụ nữ có thai','Đau cơ, tăng men gan','Nhiệt độ dưới 30°C','Vỉ 30 viên','vỉ','https://example.com/images/atorvastatin.jpg',5,11,6,1,'ACTIVE','atorvastatin-20mg',0.00,0,'2025-04-25 18:52:46','2025-04-25 18:52:46',1),(14,'Dung dịch rửa mắt','DRM-15ML','Dung dịch rửa trôi dị vật, làm dịu mắt','Nước tinh khiết vô trùng, natri clorid 0.9%','Nhỏ 2-3 giọt vào mắt khi cần, có thể lặp lại nhiều lần','Dị ứng với thành phần','Cảm giác rát nhẹ thoáng qua','Nhiệt độ phòng, tránh ánh sáng','Lọ 15ml','lọ','https://example.com/images/eye-wash.jpg',4,7,10,0,'ACTIVE','dung-dich-rua-mat',0.00,0,'2025-04-25 18:53:06','2025-04-25 18:53:06',1),(15,'Metformin 500mg','MET-500-30V','Thuốc điều trị đái tháo đường type 2','Metformin hydrochloride 500mg','Uống 1-2 viên/ngày sau ăn, theo chỉ định bác sĩ','Suy thận nặng, nhiễm toan ceton','Rối loạn tiêu hóa, chán ăn','Nhiệt độ dưới 25°C','Vỉ 30 viên','vỉ','https://example.com/images/metformin.jpg',4,2,2,1,'ACTIVE','metformin-500mg',0.00,0,'2025-04-25 18:53:27','2025-04-25 18:53:27',1),(16,'Kem bôi da chứa Corticoid','KBC-0.1-15G','Kem bôi ngoài da điều trị viêm da, chàm','Betamethasone dipropionate 0.1%','Bôi lớp mỏng 1-2 lần/ngày lên vùng da tổn thương','Nhiễm trùng da, trẻ em dưới 2 tuổi','Teo da, rạn da khi dùng kéo dài','Nhiệt độ dưới 25°C','Tuýp 15g','tuýp','https://example.com/images/corticoid-cream.jpg',5,6,6,1,'ACTIVE','kem-boi-da-chua-corticoid',0.00,0,'2025-04-25 18:53:45','2025-04-25 18:53:45',1);
 /*!40000 ALTER TABLE `Products` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -991,7 +994,7 @@ CREATE TABLE `Shopping_Cart_Items` (
   CONSTRAINT `FKkmoi16y2moh7jqtpgjjxk2stq` FOREIGN KEY (`cart_id`) REFERENCES `Shopping_Carts` (`cart_id`),
   CONSTRAINT `shopping_cart_items_ibfk_1` FOREIGN KEY (`cart_id`) REFERENCES `Shopping_Carts` (`cart_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `shopping_cart_items_ibfk_2` FOREIGN KEY (`inventory_id`) REFERENCES `Branch_Inventory` (`inventory_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Các sản phẩm trong giỏ hàng';
+) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Các sản phẩm trong giỏ hàng';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1000,6 +1003,7 @@ CREATE TABLE `Shopping_Cart_Items` (
 
 LOCK TABLES `Shopping_Cart_Items` WRITE;
 /*!40000 ALTER TABLE `Shopping_Cart_Items` DISABLE KEYS */;
+INSERT INTO `Shopping_Cart_Items` VALUES (16,16,1,2,'2025-04-27 16:25:26'),(17,16,14,6,'2025-04-27 16:25:37'),(18,17,2,2,'2025-04-27 16:25:44'),(19,17,3,2,'2025-04-27 16:26:01'),(20,18,5,4,'2025-04-27 16:33:13'),(21,18,18,4,'2025-04-27 16:44:02'),(22,19,19,2,'2025-04-27 16:44:43');
 /*!40000 ALTER TABLE `Shopping_Cart_Items` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1015,14 +1019,13 @@ CREATE TABLE `Shopping_Carts` (
   `user_id` int NOT NULL COMMENT 'Mỗi user chỉ có 1 giỏ hàng active',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `branch_id` int NOT NULL,
   PRIMARY KEY (`cart_id`),
-  UNIQUE KEY `user_id` (`user_id`),
-  UNIQUE KEY `UKt5ao4h91q3su6hi9d2haxdr2t` (`user_id`),
-  UNIQUE KEY `UKksomvqmk8uxqqave5nsxn1lao` (`user_id`),
+  UNIQUE KEY `UK6yxvquwoom284riggdkg2p300` (`user_id`,`branch_id`),
   CONSTRAINT `FK3iw2988ea60alsp0gnvvyt744` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`),
   CONSTRAINT `FKp0qp3gy6ejnn9bdmi2yh5xbwt` FOREIGN KEY (`user_id`) REFERENCES `Users` (`user_id`),
   CONSTRAINT `shopping_carts_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `Users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Lưu thông tin giỏ hàng của người dùng';
+) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Lưu thông tin giỏ hàng của người dùng';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1031,6 +1034,7 @@ CREATE TABLE `Shopping_Carts` (
 
 LOCK TABLES `Shopping_Carts` WRITE;
 /*!40000 ALTER TABLE `Shopping_Carts` DISABLE KEYS */;
+INSERT INTO `Shopping_Carts` VALUES (16,3,'2025-04-27 16:25:26','2025-04-27 16:25:37',1),(17,3,'2025-04-27 16:25:44','2025-04-27 16:26:01',2),(18,3,'2025-04-27 16:26:52','2025-04-27 16:44:02',3),(19,3,'2025-04-27 16:44:43','2025-04-27 16:44:43',4);
 /*!40000 ALTER TABLE `Shopping_Carts` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1163,8 +1167,8 @@ CREATE TABLE `Users` (
   `is_active` tinyint(1) DEFAULT '1',
   `last_login` timestamp NULL DEFAULT NULL,
   `date_of_birth` date DEFAULT NULL,
-  `gender` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `address` varchar(250) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `gender` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `address` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`user_id`),
   UNIQUE KEY `phone_number` (`phone_number`),
   UNIQUE KEY `UK9q63snka3mdh91as4io72espi` (`phone_number`),
@@ -1181,7 +1185,7 @@ CREATE TABLE `Users` (
 
 LOCK TABLES `Users` WRITE;
 /*!40000 ALTER TABLE `Users` DISABLE KEYS */;
-INSERT INTO `Users` VALUES (1,'0362522421','$2a$10$W..XDUFknq457.9GXxmap.75X1pLhVW9RLVcFIH6Ur/Cv2wnJVQtW','Cao Thi Thu','thuthi732@gmail.com','2025-04-14 21:23:25','2025-04-14 21:23:25',1,'2025-04-22 06:55:12',NULL,NULL,NULL),(2,'0352446599','$2a$10$IdV37DVxKAvrDzF7eKH7kOa1L5Qql5x//w4qMUhuJ2it7t/Uehip2','Do Van Tu','0l3vantuu7l0@gmail.com','2025-04-14 21:23:58','2025-04-19 02:00:35',1,'2025-04-18 18:58:16',NULL,NULL,NULL),(3,'0987351477','$2a$10$t1MT2zPj6sf/I6Zs.PAbV.VkR2CC0d9YnHK87mBkm6KGUecf6he8S','Do Van Thanh','vanthanh732@gmail.com','2025-04-14 21:24:14','2025-04-14 21:24:14',1,NULL,NULL,NULL,NULL),(4,'0989771499','$2a$10$GJIRYAv0l2JLZ/6TUbdD/e1KzL9OrC7l8iIO.r1Lp8BXWNao1Rx7y','Hoang Thi Tham','thamhoang732@gmail.com','2025-04-14 21:24:46','2025-04-14 21:24:46',1,'2025-04-22 06:47:26',NULL,NULL,NULL),(5,'0345001645','$2a$10$01l/M4vXIT2whjjPb.JkI..aDD2ci8THiLXbTYTZLerGRHLyYxzV6','Hang Gia Thinh','thinhgia@gmail.com','2025-04-16 23:20:18','2025-04-16 23:20:18',1,NULL,NULL,NULL,NULL),(6,'0345004355','$2a$10$kULDmlQZdBsuAf4WoIO3TuZhPJcCNx2p9vQmoD83E.aaCuzHnHPLW','Nguyen Hoang Trung','trung324312@gmail.com','2025-04-16 23:33:32','2025-04-16 23:33:32',1,'2025-04-22 06:45:34',NULL,NULL,NULL),(7,'0933345345','$2a$10$nnRxbsLqRBK3XoijC2kIzeQcaKs4ruDrhAsvPGUuEqyuikqDoNTWm','Do Ra DO','dorado732006@gmail.com','2025-04-18 19:20:02','2025-04-22 08:55:45',1,'2025-04-22 08:55:56',NULL,NULL,NULL),(8,'0987654321','$2a$10$aquUhUfBGo4.TLpgKgOEqeRBji54kB22fIn5v3/cjBjFvK8M/3ciG','Đỗ Văn Tú','0l3vantu7l0@gmail.com','2025-04-18 20:02:20','2025-04-25 15:06:01',1,'2025-04-25 17:44:44','2004-03-07','male','đường NK2, khu phố 3A, phường Thới Hoà, thị xã Bến Cát, tỉnh Bình Dương'),(9,'0987654322','$2a$10$2LcfxQhrnQiI1wdTcLB8g.BiXGPctArEBIXtmQw7Aq/P9JIh4nBc6','Đỗ Văn Hưng','hungvan2354@gmail.com','2025-04-22 06:55:55','2025-04-22 06:55:55',1,'2025-04-22 08:03:21',NULL,NULL,NULL);
+INSERT INTO `Users` VALUES (1,'0362522421','$2a$10$W..XDUFknq457.9GXxmap.75X1pLhVW9RLVcFIH6Ur/Cv2wnJVQtW','Cao Thi Thu','thuthi732@gmail.com','2025-04-14 21:23:25','2025-04-14 21:23:25',1,'2025-04-22 06:55:12',NULL,NULL,NULL),(2,'0352446599','$2a$10$IdV37DVxKAvrDzF7eKH7kOa1L5Qql5x//w4qMUhuJ2it7t/Uehip2','Do Van Tu','0l3vantuu7l0@gmail.com','2025-04-14 21:23:58','2025-04-19 02:00:35',1,'2025-04-18 18:58:16',NULL,NULL,NULL),(3,'0987351477','$2a$10$t1MT2zPj6sf/I6Zs.PAbV.VkR2CC0d9YnHK87mBkm6KGUecf6he8S','Do Van Thanh','vanthanh732@gmail.com','2025-04-14 21:24:14','2025-04-14 21:24:14',1,'2025-04-27 15:24:03',NULL,NULL,NULL),(4,'0989771499','$2a$10$GJIRYAv0l2JLZ/6TUbdD/e1KzL9OrC7l8iIO.r1Lp8BXWNao1Rx7y','Hoang Thi Tham','thamhoang732@gmail.com','2025-04-14 21:24:46','2025-04-14 21:24:46',1,'2025-04-22 06:47:26',NULL,NULL,NULL),(5,'0345001645','$2a$10$01l/M4vXIT2whjjPb.JkI..aDD2ci8THiLXbTYTZLerGRHLyYxzV6','Hang Gia Thinh','thinhgia@gmail.com','2025-04-16 23:20:18','2025-04-16 23:20:18',1,NULL,NULL,NULL,NULL),(6,'0345004355','$2a$10$kULDmlQZdBsuAf4WoIO3TuZhPJcCNx2p9vQmoD83E.aaCuzHnHPLW','Nguyen Hoang Trung','trung324312@gmail.com','2025-04-16 23:33:32','2025-04-16 23:33:32',1,'2025-04-22 06:45:34',NULL,NULL,NULL),(7,'0933345345','$2a$10$nnRxbsLqRBK3XoijC2kIzeQcaKs4ruDrhAsvPGUuEqyuikqDoNTWm','Do Ra DO','dorado732006@gmail.com','2025-04-18 19:20:02','2025-04-22 08:55:45',1,'2025-04-22 08:55:56',NULL,NULL,NULL),(8,'0987654321','$2a$10$aquUhUfBGo4.TLpgKgOEqeRBji54kB22fIn5v3/cjBjFvK8M/3ciG','Đỗ Văn Tú','0l3vantu7l0@gmail.com','2025-04-18 20:02:20','2025-04-25 15:06:01',1,'2025-04-26 18:50:40','2004-03-07','male','đường NK2, khu phố 3A, phường Thới Hoà, thị xã Bến Cát, tỉnh Bình Dương'),(9,'0987654322','$2a$10$2LcfxQhrnQiI1wdTcLB8g.BiXGPctArEBIXtmQw7Aq/P9JIh4nBc6','Đỗ Văn Hưng','hungvan2354@gmail.com','2025-04-22 06:55:55','2025-04-22 06:55:55',1,'2025-04-22 08:03:21',NULL,NULL,NULL);
 /*!40000 ALTER TABLE `Users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -1194,4 +1198,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-04-26  8:36:51
+-- Dump completed on 2025-04-28  6:49:11

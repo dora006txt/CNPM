@@ -1,6 +1,5 @@
 package ptithcm.edu.pharmacy.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus; // Import HttpStatus
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*; // Import more annotations
@@ -15,7 +14,6 @@ public class BranchController {
 
     private final BranchService branchService;
 
-    @Autowired
     public BranchController(BranchService branchService) {
         this.branchService = branchService;
     }

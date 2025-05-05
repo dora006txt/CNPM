@@ -21,7 +21,6 @@ import ptithcm.edu.pharmacy.dto.UpdateCartItemRequestDTO; // Add this import
 import ptithcm.edu.pharmacy.entity.User;
 import ptithcm.edu.pharmacy.repository.UserRepository;
 import ptithcm.edu.pharmacy.service.ShoppingCartService;
-import ptithcm.edu.pharmacy.service.UserService; // Assuming you have UserService to get current user
 import ptithcm.edu.pharmacy.service.exception.InsufficientStockException;
 
 import org.springframework.web.bind.annotation.GetMapping; // Add this import
@@ -34,7 +33,6 @@ import java.util.List; // Add this import
 public class ShoppingCartController {
 
     private final ShoppingCartService shoppingCartService;
-    private final UserService userService;
     private final UserRepository userRepository;
 
     @PostMapping("/items")
@@ -88,8 +86,8 @@ public class ShoppingCartController {
             // 1. Get the currently authenticated user's ID (or username/phone number)
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal().equals("anonymousUser")) {
-                 log.warn("User not authenticated trying to view cart.");
-                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+                log.warn("User not authenticated trying to view cart.");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
             String username = authentication.getName(); // This is the phone number
 
@@ -111,9 +109,9 @@ public class ShoppingCartController {
             return ResponseEntity.ok(cartDTOs);
 
         } catch (UsernameNotFoundException e) { // Keep this catch block for the orElseThrow
-             log.error("Authentication error while fetching cart: {}", e.getMessage());
+            log.error("Authentication error while fetching cart: {}", e.getMessage());
              // Consider returning NOT_FOUND if the user genuinely doesn't exist vs UNAUTHORIZED
-             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (Exception e) {
             log.error("Unexpected error fetching carts: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -149,8 +147,8 @@ public class ShoppingCartController {
             log.warn("InsufficientStockException while updating item for user {}: {}", username, e.getMessage());
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         } catch (IllegalArgumentException e) { // Catch potential validation errors from service
-             log.warn("IllegalArgumentException while updating item for user {}: {}", username, e.getMessage());
-             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            log.warn("IllegalArgumentException while updating item for user {}: {}", username, e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
             log.error("Unexpected error updating cart item ID {} for user {}: {}", cartItemId, username, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred.");
@@ -174,11 +172,11 @@ public class ShoppingCartController {
             Integer userId = user.getUserId();
 
             ShoppingCartDTO updatedCart = shoppingCartService.removeItemFromCart(userId, cartItemId);
-             log.info("Successfully removed item ID: {} for user ID: {}", cartItemId, userId);
+            log.info("Successfully removed item ID: {} for user ID: {}", cartItemId, userId);
             // Decide what to return: the updated cart, or just status OK if cart might be empty/deleted
             if (updatedCart == null || (updatedCart.getItems() != null && updatedCart.getItems().isEmpty())) {
                  // Optionally return 204 No Content if the cart is now empty or deleted
-                 return ResponseEntity.noContent().build();
+                return ResponseEntity.noContent().build();
             }
             return ResponseEntity.ok(updatedCart);
 
@@ -188,8 +186,8 @@ public class ShoppingCartController {
              // Could be user not found OR cart item not found/not belonging to user
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (IllegalArgumentException e) { // Catch potential validation errors from service
-             log.warn("IllegalArgumentException while removing item for user {}: {}", username, e.getMessage());
-             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            log.warn("IllegalArgumentException while removing item for user {}: {}", username, e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
             log.error("Unexpected error removing cart item ID {} for user {}: {}", cartItemId, username, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred.");

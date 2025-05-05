@@ -274,7 +274,7 @@ public class UserService { // Or your relevant service name
 
     // --- Helper Method: Map User to UserResponse DTO ---
     // Consider making this public or moving it to a dedicated mapper class if used elsewhere
-    private UserResponse mapUserToResponse(User user) {
+    public UserResponse mapUserToResponse(User user) {
         if (user == null) {
             return null;
         }

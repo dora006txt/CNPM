@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -24,6 +25,7 @@ import org.springframework.http.HttpMethod;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
     @Autowired
@@ -33,22 +35,24 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(AbstractHttpConfigurer::disable)
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
                 // Permit public GET access to specific resources
                 .requestMatchers(HttpMethod.GET,
                     "/", "/index.html", "/style.css", "/script.js", // Static content
-                    // "/api/auth/login", // Moved below
                     "/api/auth/register", "/api/auth/forgot-password", // Auth endpoints (GET for potential pages)
                     "/api/categories/**", // View categories
                     "/api/products/**", // View products
                     "/api/v1/branches", "/api/v1/branches/**", // View branches
                     "/api/v1/inventory/branch/{branchId}/products/display", // View product list display per branch
                     "/api/v1/inventory/branch/{branchId}/product/{productId}/display" // View single product display
+                    // REMOVE "/api/payment-types" from here if it exists, as it will be secured below
                 ).permitAll()
-                // Permit public POST access for authentication
+                // Permit public POST access for authentication AND forgot password
                 .requestMatchers(HttpMethod.POST,
-                    "/api/auth/login", // <-- Allow POST for login
-                    "/api/auth/register" // Allow POST for registration
+                    "/api/auth/login",
+                    "/api/auth/register",
+                    "/api/auth/forgot-password" // Add this line
                 ).permitAll()
 
                 // --- Branch Management (Admin) ---
@@ -57,31 +61,40 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.DELETE, "/api/v1/branches/**").hasAuthority("ADMIN")
 
                 // --- Inventory Management ---
-                // Allow authenticated users to view specific raw inventory details
                 .requestMatchers(HttpMethod.GET,
-                    "/api/v1/inventory", // Get all raw inventory  <-- This line
-                    "/api/v1/inventory/{id}", // Get raw inventory by ID
-                    "/api/v1/inventory/branch/{branchId}", // Get raw inventory by branch
-                    "/api/v1/inventory/product/{productId}", // Get raw inventory by product
-                    "/api/v1/inventory/branch/{branchId}/product/{productId}" // Get specific raw item
-                 ).authenticated() // Requires authentication <-- This rule applies
-                // Require ADMIN to modify inventory
+                    "/api/v1/inventory",
+                    "/api/v1/inventory/{id}",
+                    "/api/v1/inventory/branch/{branchId}",
+                    "/api/v1/inventory/product/{productId}",
+                    "/api/v1/inventory/branch/{branchId}/product/{productId}"
+                ).authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/v1/inventory").hasAuthority("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/v1/inventory/**").hasAuthority("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/v1/inventory/**").hasAuthority("ADMIN")
 
+                // --- Payment Type Management ---
+                .requestMatchers(HttpMethod.GET, "/api/payment-types").authenticated()
+                .requestMatchers("/api/admin/payment-types/**").hasAuthority("ADMIN")
+
+                // --- Shipping Method Management (Baseline) ---
+                // @PreAuthorize in the controller will handle specific roles (ADMIN vs authenticated)
+                .requestMatchers("/api/shipping-methods/**").authenticated() // Add this line
+
+                // --- Order Management (Authenticated Users) ---
+                .requestMatchers("/api/v1/orders/**").authenticated() // Restore this line
+                // .requestMatchers("/api/v1/orders/**").permitAll() // Remove or comment out the temporary line
+
                 // --- Other Secured Endpoints ---
                 .requestMatchers("/api/users/me").authenticated()
                 .requestMatchers("/api/addresses/**").authenticated()
-
-                // --- Cart Management ---
-                .requestMatchers("/api/v1/cart/**").authenticated() // Secure all cart operations
+                .requestMatchers("/api/v1/cart/**").authenticated()
 
                 // Secure all other requests
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
 
         return http.build();
     }

@@ -100,6 +100,17 @@
 		<artifactId>commons-lang3</artifactId>
 		<!-- Check for the latest version -->
 	</dependency>
+	<dependency>
+		<groupId>org.mapstruct</groupId>
+		<artifactId>mapstruct</artifactId>
+		<version>1.5.5.Final</version> <!-- Use the latest version -->
+	</dependency>
+	<dependency>
+		<groupId>org.mapstruct</groupId>
+		<artifactId>mapstruct-processor</artifactId>
+		<version>1.5.5.Final</version>
+		<scope>provided</scope>
+	</dependency>
 	</dependencies>
 
 	<build>
@@ -112,8 +123,22 @@
 						<path>
 							<groupId>org.projectlombok</groupId>
 							<artifactId>lombok</artifactId>
+							<!-- Ensure the version matches the one in dependencies -->
+							<version>${lombok.version}</version> <!-- Or hardcode the version if not using a property -->
+						</path>
+						<!-- Add this path for MapStruct -->
+						<path>
+							<groupId>org.mapstruct</groupId>
+							<artifactId>mapstruct-processor</artifactId>
+							<version>1.5.5.Final</version> <!-- Use the same version as the mapstruct dependency -->
 						</path>
 					</annotationProcessorPaths>
+					<!-- Optional: Explicitly specify the compiler arguments for Lombok -->
+					<!-- <compilerArgs>
+                        <compilerArg>
+                            -Amapstruct.defaultComponentModel=spring
+                        </compilerArg>
+                    </compilerArgs> -->
 				</configuration>
 			</plugin>
 			<plugin>

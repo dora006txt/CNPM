@@ -1,7 +1,6 @@
 package ptithcm.edu.pharmacy.service.impl;
 
-import jakarta.persistence.EntityNotFoundException; // Import EntityNotFoundException
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import ptithcm.edu.pharmacy.dto.BranchDTO;
 import ptithcm.edu.pharmacy.entity.Branch;
@@ -17,7 +16,6 @@ public class BranchServiceImpl implements BranchService {
 
     private final BranchRepository branchRepository;
 
-    @Autowired
     public BranchServiceImpl(BranchRepository branchRepository) {
         this.branchRepository = branchRepository;
     }

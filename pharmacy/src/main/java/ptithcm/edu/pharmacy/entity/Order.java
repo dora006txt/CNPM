@@ -1,19 +1,34 @@
 package ptithcm.edu.pharmacy.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter; // Using specific annotations instead of @Data
+import lombok.Setter;
+import lombok.ToString;
+import lombok.EqualsAndHashCode;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Set;
 
-@Data
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+// Consider replacing @Data with specific annotations to avoid potential issues
+@Getter
+@Setter
+@ToString(exclude = {"user", "branch", "shippingMethod", "orderStatus", "paymentType", "assignedStaff", "orderItems"}) // Exclude relationships from toString
+@EqualsAndHashCode(exclude = {"user", "branch", "shippingMethod", "orderStatus", "paymentType", "assignedStaff", "orderItems"}) // Exclude relationships from equals/hashCode
 @Entity
-@Table(name = "Orders")
+@Table(name = "Orders") // Changed table name to "Orders" (plural)
 public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "order_id")
     private Integer orderId;
+
+    @Column(name = "shipping_address", length = 500) // Adjust length as needed
+    private String shippingAddress;
 
     @Column(name = "order_code", nullable = false, unique = true)
     private String orderCode;
@@ -28,16 +43,6 @@ public class Order {
 
     @Column(name = "order_date")
     private LocalDateTime orderDate;
-
-    // Remove these lines:
-    // @ManyToOne
-    // @JoinColumn(name = "shipping_address_id", nullable = false)
-    // private Address shippingAddress;
-    
-    // Remove these lines:
-    // @ManyToOne
-    // @JoinColumn(name = "billing_address_id")
-    // private Address billingAddress;
     
     @ManyToOne
     @JoinColumn(name = "shipping_method_id")
@@ -65,27 +70,32 @@ public class Order {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_status")
-    private PaymentStatus paymentStatus = PaymentStatus.PENDING;
+    private PaymentStatus paymentStatus;
 
+    @Column(columnDefinition = "TEXT") // Use TEXT for potentially longer notes
     private String notes;
 
     @Column(name = "requires_consultation")
-    private Boolean requiresConsultation = false;
+    private Boolean requiresConsultation = false; // Default to false
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assigned_staff_id")
-    private Staff assignedStaff;
+    private Staff assignedStaff; // Optional staff assignment
 
     @Enumerated(EnumType.STRING)
     @Column(name = "consultation_status")
-    private ConsultationStatus consultationStatus = ConsultationStatus.NOT_REQUIRED;
+    private ConsultationStatus consultationStatus;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", updatable = false)
+    @CreationTimestamp
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
+    @UpdateTimestamp // Add annotation
     private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "order")
+    // Change FetchType.EAGER to FetchType.LAZY
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY) // Changed to LAZY
+    @JsonManagedReference
     private Set<OrderItem> orderItems;
 }

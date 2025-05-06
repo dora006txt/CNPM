@@ -40,6 +40,17 @@ public class StaffServiceImpl implements StaffService {
                 .collect(Collectors.toList());
     }
 
+    // New method to get available doctors
+    @Override
+    @Transactional(readOnly = true)
+    public List<StaffResponse> getAvailableDoctors() {
+        log.info("Fetching all available doctors (active and available for consultation)");
+        return staffRepository.findAll().stream()
+                .filter(staff -> staff.getIsActive() && staff.getIsAvailableForConsultation()) // Key filter
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
     @Override
     @Transactional(readOnly = true)
     public StaffResponse getStaffById(Integer id) {

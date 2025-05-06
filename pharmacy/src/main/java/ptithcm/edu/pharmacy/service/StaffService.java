@@ -10,5 +10,6 @@ public interface StaffService {
     StaffResponse getStaffById(Integer id);
     StaffResponse createStaff(StaffRequest request);
     StaffResponse updateStaff(Integer id, StaffRequest request);
+    List<StaffResponse> getAvailableDoctors(); // Corrected: Added List<StaffResponse> and semicolon
     void deleteStaff(Integer id); // Deactivates staff
 }

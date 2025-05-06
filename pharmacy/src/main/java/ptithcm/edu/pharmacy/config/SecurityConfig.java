@@ -21,7 +21,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import lombok.RequiredArgsConstructor; 
+import lombok.RequiredArgsConstructor;
 import ptithcm.edu.pharmacy.security.JwtAuthenticationFilter;
 
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider; // Add if needed for AuthenticationProvider bean
@@ -30,7 +30,7 @@ import org.springframework.security.core.userdetails.UserDetailsService; // Add 
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
+@EnableMethodSecurity // Ensure method security is enabled for @PreAuthorize
 @RequiredArgsConstructor // If using Lombok
 public class SecurityConfig {
 
@@ -100,6 +100,9 @@ public class SecurityConfig {
                 .requestMatchers("/api/users/me").authenticated()
                 .requestMatchers("/api/addresses/**").authenticated()
                 .requestMatchers("/api/v1/cart/**").authenticated()
+
+                // --- Staff Management (Admin) ---
+                .requestMatchers("/api/admin/staff/**").hasAuthority("ADMIN") // Add this rule
 
                 // Secure all other requests
                 .anyRequest().authenticated()

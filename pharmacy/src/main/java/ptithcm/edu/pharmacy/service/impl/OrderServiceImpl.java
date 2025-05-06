@@ -239,7 +239,7 @@ public List<OrderResponseDTO> findOrdersByUserId(Integer userId) {
         if (order.getUser() == null || !order.getUser().getUserId().equals(userId)) {
             String ownerId = (order.getUser() != null) ? String.valueOf(order.getUser().getUserId()) : "unknown";
             log.warn("Authorization failed: User ID {} attempted to cancel order ID {} owned by User ID {}",
-                     userId, orderId, ownerId);
+                    userId, orderId, ownerId);
             throw new AccessDeniedException("User is not authorized to cancel this order.");
         }
         log.debug("User {} authorized to cancel order {}", userId, orderId);
@@ -270,11 +270,11 @@ public List<OrderResponseDTO> findOrdersByUserId(Integer userId) {
                 inventory.setQuantityOnHand(inventory.getQuantityOnHand() + quantityToRestore);
                 branchInventoryRepository.save(inventory); // Save updated inventory
                 log.debug("Restored {} units for inventory ID: {} (Product ID: {})",
-                          quantityToRestore, inventory.getInventoryId(), item.getProduct().getId());
+                        quantityToRestore, inventory.getInventoryId(), item.getProduct().getId());
             } else {
                 // Log a warning if an order item lacks inventory link - potential data issue
                 log.warn("Inventory link missing for OrderItem ID: {} in Order ID: {}. Stock not restored for this item.",
-                         item.getOrderItemId(), orderId);
+                        item.getOrderItemId(), orderId);
             }
         }
 
@@ -297,108 +297,6 @@ public List<OrderResponseDTO> findOrdersByUserId(Integer userId) {
         return mapOrderToResponseDTO(savedOrder); // Use the existing mapping function
     }
     // --- End of cancelOrder implementation ---
-
-    /**
-     * Checks if the requesting user is authorized to cancel the given order.
-     * Authorization is granted if the user is the owner of the order OR if the user has an ADMIN role (TODO).
-     *
-     * @param order            The order being considered for cancellation.
-     * @param requestingUserId The ID of the user attempting the cancellation.
-     * @throws AccessDeniedException if the user is not authorized.
-     */
-    private void checkOrderCancellationAuthorization(Order order, Integer requestingUserId) {
-        Integer orderOwnerUserId = (order.getUser() != null) ? order.getUser().getUserId() : null;
-        log.info("Authorization check for order cancellation: Requesting User ID = {}, Order Owner User ID = {}", requestingUserId, orderOwnerUserId);
-
-        // Check if the requesting user owns the order
-        boolean isOwner = orderOwnerUserId != null && orderOwnerUserId.equals(requestingUserId);
-
-        // TODO: Implement Admin Role Check
-        // boolean isAdmin = checkUserAdminRole(requestingUserId); // Placeholder for admin check logic
-        boolean isAdmin = false; // Currently, only the owner can cancel
-
-        // If the user is neither the owner nor an admin, deny access.
-        if (!isOwner && !isAdmin) {
-            log.warn("Cancel request denied: User {} is not authorized for order {} owned by user {}", requestingUserId, order.getOrderId(), orderOwnerUserId);
-            // This exception causes the 403 Forbidden response
-            throw new AccessDeniedException("User " + requestingUserId + " is not authorized to cancel order " + order.getOrderId());
-        }
-        log.info("Authorization successful for user {} to cancel order {}", requestingUserId, order.getOrderId());
-    }
-
-    /**
-     * Validates if the order's current status is among the predefined cancellable statuses.
-     *
-     * @param order The order to check.
-     * @throws IllegalStateException if the order status is not cancellable.
-     */
-    private void validateCancellableStatus(Order order) {
-        OrderStatus currentStatus = order.getOrderStatus();
-        // Get status name, converting null to "NULL" for safe comparison.
-        String currentStatusName = (currentStatus != null) ? currentStatus.getStatusName().toUpperCase() : "NULL";
-
-        // Check if the status name exists in the set of cancellable statuses.
-        if (!CANCELLABLE_STATUSES.contains(currentStatusName)) {
-            log.warn("Cancel request denied: Order {} has status '{}', which is not cancellable.", order.getOrderId(), currentStatusName);
-            throw new IllegalStateException("Order cannot be cancelled because its current status is: " + currentStatusName);
-        }
-        log.info("Order {} status '{}' is valid for cancellation.", order.getOrderId(), currentStatusName);
-    }
-
-    /**
-     * Fetches the OrderStatus entity representing the 'CANCELLED' state.
-     *
-     * @return The OrderStatus entity for 'CANCELLED'.
-     * @throws IllegalStateException if the 'CANCELLED' status is not found in the database (configuration error).
-     */
-    private OrderStatus fetchCancelledOrderStatus() {
-        return orderStatusRepository.findByStatusNameIgnoreCase("CANCELLED")
-                .orElseThrow(() -> {
-                    log.error("Configuration error: 'CANCELLED' status not found in the database.");
-                    // This indicates a system setup issue, hence IllegalStateException
-                    return new IllegalStateException("System configuration error: Cannot find 'CANCELLED' order status.");
-                });
-    }
-
-    /**
-     * Restores the stock quantity for each item associated with the cancelled order.
-     * It iterates through order items, finds the corresponding inventory, and increases the quantity on hand.
-     *
-     * @param order The order whose items' inventory needs to be restored.
-     */
-    private void restoreInventoryForOrder(Order order) {
-        log.info("Restoring inventory for cancelled order {}", order.getOrderId());
-        // Check if there are items to restore.
-        if (order.getOrderItems() == null || order.getOrderItems().isEmpty()) {
-            log.warn("No items found for order {} to restore inventory.", order.getOrderId());
-            return; // Nothing to do if there are no items.
-        }
-
-        // Iterate through each item in the order.
-        for (OrderItem item : order.getOrderItems()) {
-            BranchInventory inventory = item.getInventory(); // Get the specific inventory record linked to the order item.
-            if (inventory != null) {
-                int quantityToRestore = item.getQuantity(); // Get the quantity from the order item.
-                try {
-                    // Increase the quantity on hand in the inventory record.
-                    inventory.setQuantityOnHand(inventory.getQuantityOnHand() + quantityToRestore);
-                    branchInventoryRepository.save(inventory); // Save the updated inventory record.
-                    log.debug("Restored {} units for product ID {} in inventory ID {}", quantityToRestore, item.getProduct().getId(), inventory.getInventoryId());
-                } catch (Exception e) {
-                    // Log error if saving the inventory update fails.
-                    log.error("Failed to save inventory update for inventory ID {} during cancellation of order {}: {}",
-                              inventory.getInventoryId(), order.getOrderId(), e.getMessage(), e);
-                    // Depending on business logic, might need to rethrow or handle differently.
-                }
-            } else {
-                // Log a warning if an order item doesn't have a linked inventory record (potential data issue).
-                log.warn("Could not restore inventory for order item ID {}: Inventory link is missing.", item.getOrderItemId());
-                // Decide if this should halt the process or just be logged.
-            }
-        }
-        log.info("Inventory restoration process completed for order {}", order.getOrderId());
-    }
-
 
     // --- Helper Methods (mapOrderToResponseDTO, mapOrderItemToResponseDTO, generateOrderCode) ---
 

@@ -16,8 +16,6 @@ import java.util.List; // Import List
 import org.springframework.web.bind.annotation.PathVariable; // Import PathVariable
 
 import jakarta.persistence.EntityNotFoundException;
-import org.slf4j.Logger; // Ensure Logger is imported
-import org.slf4j.LoggerFactory; // Ensure LoggerFactory is imported
 import org.springframework.web.bind.annotation.PatchMapping; // Ensure this import is present
 
 @RestController

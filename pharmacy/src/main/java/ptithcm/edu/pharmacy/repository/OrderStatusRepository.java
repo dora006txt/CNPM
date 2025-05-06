@@ -16,7 +16,7 @@ public interface OrderStatusRepository extends JpaRepository<OrderStatus, Intege
      * @param statusName The name of the status (e.g., "PENDING", "PROCESSING", "SHIPPED").
      * @return An Optional containing the OrderStatus if found, otherwise empty.
      */
-    Optional<OrderStatus> findByStatusName(String statusName);
+    Optional<OrderStatus> findByStatusNameIgnoreCase(String statusName);
 
     // Add other custom query methods if needed in the future
 }

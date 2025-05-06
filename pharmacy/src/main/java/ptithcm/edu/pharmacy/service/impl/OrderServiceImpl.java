@@ -1,6 +1,7 @@
 package ptithcm.edu.pharmacy.service.impl;
 
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ptithcm.edu.pharmacy.dto.CreateOrderRequestDTO;
@@ -8,25 +9,32 @@ import ptithcm.edu.pharmacy.dto.OrderItemResponseDTO;
 import ptithcm.edu.pharmacy.dto.OrderResponseDTO;
 import ptithcm.edu.pharmacy.entity.*;
 import ptithcm.edu.pharmacy.repository.*;
+import ptithcm.edu.pharmacy.repository.OrderStatusRepository; // Import OrderStatusRepository
+import ptithcm.edu.pharmacy.entity.OrderStatus; // Import OrderStatus entity/enum
+import java.util.Set; 
 import ptithcm.edu.pharmacy.service.OrderService;
 import ptithcm.edu.pharmacy.service.exception.InsufficientStockException;
 import ptithcm.edu.pharmacy.service.exception.ShoppingCartNotFoundException; // <-- Add this import
 
 import jakarta.persistence.EntityNotFoundException; // Ensure correct import
+
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.List; // Import List
 import org.springframework.security.access.AccessDeniedException; // For authorization check
 import org.slf4j.Logger; // Add logger import
-import org.slf4j.LoggerFactory; 
+import org.slf4j.LoggerFactory; // Ensure LoggerFactory is imported
 @Service
-@RequiredArgsConstructor // Lombok annotation for constructor injection of final fields
+@RequiredArgsConstructor 
 public class OrderServiceImpl implements OrderService {
+
+    // Define the cancellable statuses
+    private static final Set<String> CANCELLABLE_STATUSES = Set.of("PENDING"); // Add other cancellable status names here if needed (e.g., "PROCESSING")
 
     private final OrderRepository orderRepository; // Injected here
     private final UserRepository userRepository;
@@ -56,7 +64,7 @@ public class OrderServiceImpl implements OrderService {
         PaymentType paymentType = paymentTypeRepository.findById(createOrderRequestDTO.getPaymentTypeId())
                 .orElseThrow(() -> new EntityNotFoundException("Payment Type not found with ID: " + createOrderRequestDTO.getPaymentTypeId()));
 
-        OrderStatus initialStatus = orderStatusRepository.findByStatusName("PENDING")
+        OrderStatus initialStatus = orderStatusRepository.findByStatusNameIgnoreCase("PENDING")
                 .orElseThrow(() -> new EntityNotFoundException("Default order status 'PENDING' not found."));
 
         // 2. Fetch User's ShoppingCart for the specific branch
@@ -95,7 +103,7 @@ public class OrderServiceImpl implements OrderService {
             BranchInventory inventory = cartItem.getInventory();
             if (inventory == null) {
                  // Handle cases where inventory might be missing (data integrity issue)
-                 throw new IllegalStateException("Cart item ID " + cartItem.getCartItemId() + " is missing inventory information.");
+                throw new IllegalStateException("Cart item ID " + cartItem.getCartItemId() + " is missing inventory information.");
             }
             Product product = inventory.getProduct();
             if (product == null) {
@@ -139,7 +147,7 @@ public class OrderServiceImpl implements OrderService {
         order.setSubtotalAmount(subtotal);
         BigDecimal shippingFee = shippingMethod.getBaseCost() != null ? shippingMethod.getBaseCost() : BigDecimal.ZERO;
         order.setShippingFee(shippingFee);
-        order.setDiscountAmount(BigDecimal.ZERO); // TODO: Implement discount logic
+        order.setDiscountAmount(BigDecimal.ZERO); 
         order.setFinalAmount(subtotal.add(shippingFee).subtract(order.getDiscountAmount()));
 
         // Set shipping address - UNCOMMENT THIS LOGIC
@@ -159,9 +167,12 @@ public class OrderServiceImpl implements OrderService {
         // Option 1: Delete all items directly (requires ShoppingCartItemRepository)
         shoppingCartItemRepository.deleteAll(itemsToProcess); // Delete the processed items
 
+        // After deleting items, delete the cart itself
+        shoppingCartRepository.delete(cart); // Add this line to delete the shopping cart
+
         // Option 2: Clear the collection and update the cart (if cascade remove is set on ShoppingCart entity)
         // cart.getCartItems().clear();
-        // shoppingCartRepository.save(cart);
+        // shoppingCartRepository.save(cart); // This would only clear items, not delete the cart if not configured for orphan removal
 
         // 8. Map saved Order to OrderResponseDTO
         // Fetch again to be safe, especially if OrderItems fetch type is LAZY
@@ -177,7 +188,6 @@ public class OrderServiceImpl implements OrderService {
     @Override
 @Transactional(readOnly = true)
 public List<OrderResponseDTO> findOrdersByUserId(Integer userId) {
-    // ... existing checks ...
     List<Order> orders = orderRepository.findByUser_UserId(userId);
     log.info("Found {} orders for user ID: {}", orders.size(), userId); // Log count
     try {
@@ -201,165 +211,314 @@ public List<OrderResponseDTO> findOrdersByUserId(Integer userId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new EntityNotFoundException("Order not found with ID: " + orderId));
 
-        // --- Authorization Check ---
-        // Check if the user requesting the order is the one who placed it
         if (!order.getUser().getUserId().equals(userId)) {
-            // Optional: Add logic here to check if the requesting user is an ADMIN
-            // Example:
-            // User requestingUser = userRepository.findById(userId).orElse(null);
-            // if (requestingUser == null || !requestingUser.getRole().getName().equals("ADMIN")) {
-                 throw new AccessDeniedException("User " + userId + " is not authorized to view order " + orderId);
-            // }
+            throw new AccessDeniedException("User " + userId + " is not authorized to view order " + orderId);
         }
         // --- End Authorization Check ---
 
+        // Use the existing mapping method
         return mapOrderToResponseDTO(order);
     }
     // --- End of findOrderById implementation ---
 
 
-    // --- Updated mapOrderToResponseDTO with more logging and error handling ---
+    // --- Implementation for cancelOrder ---
+    @Override
+    @Transactional
+    public OrderResponseDTO cancelOrder(Integer orderId, Integer userId) {
+        log.info("Attempting cancellation for order ID: {} by user ID: {}", orderId, userId);
+
+        // 1. Fetch the order
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> {
+                    log.warn("Cancellation failed: Order not found with ID: {}", orderId);
+                    return new EntityNotFoundException("Order not found with id: " + orderId);
+                });
+
+        // 2. Authorization Check: Verify the user owns the order
+        if (order.getUser() == null || !order.getUser().getUserId().equals(userId)) {
+            String ownerId = (order.getUser() != null) ? String.valueOf(order.getUser().getUserId()) : "unknown";
+            log.warn("Authorization failed: User ID {} attempted to cancel order ID {} owned by User ID {}",
+                     userId, orderId, ownerId);
+            throw new AccessDeniedException("User is not authorized to cancel this order.");
+        }
+        log.debug("User {} authorized to cancel order {}", userId, orderId);
+
+        // 3. Status Check: Verify if the order is in a cancellable state
+        String currentStatusName = order.getOrderStatus().getStatusName();
+        if (!CANCELLABLE_STATUSES.contains(currentStatusName.toUpperCase())) { // Use toUpperCase for robust comparison
+            log.warn("Cancellation failed: Order ID {} has non-cancellable status: {}", orderId, currentStatusName);
+            throw new IllegalStateException(
+                    "Order cannot be cancelled because its current status is '" + currentStatusName + "'.");
+        }
+        log.debug("Order ID {} has cancellable status: {}", orderId, currentStatusName);
+
+        // 4. Fetch the 'CANCELLED' status entity
+        OrderStatus cancelledStatus = orderStatusRepository.findByStatusNameIgnoreCase("FAILED")
+                .orElseThrow(() -> {
+                    log.error("Critical error: 'CANCELLED' order status definition not found in the database.");
+                    return new EntityNotFoundException("System configuration error: 'CANCELLED' status not found.");
+                });
+
+        // 5. Restore Inventory Stock
+        log.debug("Restoring inventory for order ID: {}", orderId);
+        for (OrderItem item : order.getOrderItems()) {
+            BranchInventory inventory = item.getInventory();
+            // Check if inventory exists for the item (robustness)
+            if (inventory != null) {
+                int quantityToRestore = item.getQuantity();
+                inventory.setQuantityOnHand(inventory.getQuantityOnHand() + quantityToRestore);
+                branchInventoryRepository.save(inventory); // Save updated inventory
+                log.debug("Restored {} units for inventory ID: {} (Product ID: {})",
+                          quantityToRestore, inventory.getInventoryId(), item.getProduct().getId());
+            } else {
+                // Log a warning if an order item lacks inventory link - potential data issue
+                log.warn("Inventory link missing for OrderItem ID: {} in Order ID: {}. Stock not restored for this item.",
+                         item.getOrderItemId(), orderId);
+            }
+        }
+
+        // 6. Update Order Status and Timestamps
+        order.setOrderStatus(cancelledStatus);
+        order.setCancelledAt(LocalDateTime.now()); // Record cancellation time
+
+        // 7. Update Payment Status (if applicable)
+        // If payment was pending, mark it as failed/cancelled to prevent further processing.
+        if (order.getPaymentStatus() == PaymentStatus.PENDING) {
+            order.setPaymentStatus(PaymentStatus.FAILED); // Or a dedicated CANCELLED status if you add one to PaymentStatus enum
+            log.debug("Set payment status to FAILED for order ID: {}", orderId);
+        }
+
+        // 8. Save the updated order
+        Order savedOrder = orderRepository.save(order);
+        log.info("Successfully cancelled order ID: {}", savedOrder.getOrderId());
+
+        // 9. Map to DTO and return
+        return mapOrderToResponseDTO(savedOrder); // Use the existing mapping function
+    }
+    // --- End of cancelOrder implementation ---
+
+    /**
+     * Checks if the requesting user is authorized to cancel the given order.
+     * Authorization is granted if the user is the owner of the order OR if the user has an ADMIN role (TODO).
+     *
+     * @param order            The order being considered for cancellation.
+     * @param requestingUserId The ID of the user attempting the cancellation.
+     * @throws AccessDeniedException if the user is not authorized.
+     */
+    private void checkOrderCancellationAuthorization(Order order, Integer requestingUserId) {
+        Integer orderOwnerUserId = (order.getUser() != null) ? order.getUser().getUserId() : null;
+        log.info("Authorization check for order cancellation: Requesting User ID = {}, Order Owner User ID = {}", requestingUserId, orderOwnerUserId);
+
+        // Check if the requesting user owns the order
+        boolean isOwner = orderOwnerUserId != null && orderOwnerUserId.equals(requestingUserId);
+
+        // TODO: Implement Admin Role Check
+        // boolean isAdmin = checkUserAdminRole(requestingUserId); // Placeholder for admin check logic
+        boolean isAdmin = false; // Currently, only the owner can cancel
+
+        // If the user is neither the owner nor an admin, deny access.
+        if (!isOwner && !isAdmin) {
+            log.warn("Cancel request denied: User {} is not authorized for order {} owned by user {}", requestingUserId, order.getOrderId(), orderOwnerUserId);
+            // This exception causes the 403 Forbidden response
+            throw new AccessDeniedException("User " + requestingUserId + " is not authorized to cancel order " + order.getOrderId());
+        }
+        log.info("Authorization successful for user {} to cancel order {}", requestingUserId, order.getOrderId());
+    }
+
+    /**
+     * Validates if the order's current status is among the predefined cancellable statuses.
+     *
+     * @param order The order to check.
+     * @throws IllegalStateException if the order status is not cancellable.
+     */
+    private void validateCancellableStatus(Order order) {
+        OrderStatus currentStatus = order.getOrderStatus();
+        // Get status name, converting null to "NULL" for safe comparison.
+        String currentStatusName = (currentStatus != null) ? currentStatus.getStatusName().toUpperCase() : "NULL";
+
+        // Check if the status name exists in the set of cancellable statuses.
+        if (!CANCELLABLE_STATUSES.contains(currentStatusName)) {
+            log.warn("Cancel request denied: Order {} has status '{}', which is not cancellable.", order.getOrderId(), currentStatusName);
+            throw new IllegalStateException("Order cannot be cancelled because its current status is: " + currentStatusName);
+        }
+        log.info("Order {} status '{}' is valid for cancellation.", order.getOrderId(), currentStatusName);
+    }
+
+    /**
+     * Fetches the OrderStatus entity representing the 'CANCELLED' state.
+     *
+     * @return The OrderStatus entity for 'CANCELLED'.
+     * @throws IllegalStateException if the 'CANCELLED' status is not found in the database (configuration error).
+     */
+    private OrderStatus fetchCancelledOrderStatus() {
+        return orderStatusRepository.findByStatusNameIgnoreCase("CANCELLED")
+                .orElseThrow(() -> {
+                    log.error("Configuration error: 'CANCELLED' status not found in the database.");
+                    // This indicates a system setup issue, hence IllegalStateException
+                    return new IllegalStateException("System configuration error: Cannot find 'CANCELLED' order status.");
+                });
+    }
+
+    /**
+     * Restores the stock quantity for each item associated with the cancelled order.
+     * It iterates through order items, finds the corresponding inventory, and increases the quantity on hand.
+     *
+     * @param order The order whose items' inventory needs to be restored.
+     */
+    private void restoreInventoryForOrder(Order order) {
+        log.info("Restoring inventory for cancelled order {}", order.getOrderId());
+        // Check if there are items to restore.
+        if (order.getOrderItems() == null || order.getOrderItems().isEmpty()) {
+            log.warn("No items found for order {} to restore inventory.", order.getOrderId());
+            return; // Nothing to do if there are no items.
+        }
+
+        // Iterate through each item in the order.
+        for (OrderItem item : order.getOrderItems()) {
+            BranchInventory inventory = item.getInventory(); // Get the specific inventory record linked to the order item.
+            if (inventory != null) {
+                int quantityToRestore = item.getQuantity(); // Get the quantity from the order item.
+                try {
+                    // Increase the quantity on hand in the inventory record.
+                    inventory.setQuantityOnHand(inventory.getQuantityOnHand() + quantityToRestore);
+                    branchInventoryRepository.save(inventory); // Save the updated inventory record.
+                    log.debug("Restored {} units for product ID {} in inventory ID {}", quantityToRestore, item.getProduct().getId(), inventory.getInventoryId());
+                } catch (Exception e) {
+                    // Log error if saving the inventory update fails.
+                    log.error("Failed to save inventory update for inventory ID {} during cancellation of order {}: {}",
+                              inventory.getInventoryId(), order.getOrderId(), e.getMessage(), e);
+                    // Depending on business logic, might need to rethrow or handle differently.
+                }
+            } else {
+                // Log a warning if an order item doesn't have a linked inventory record (potential data issue).
+                log.warn("Could not restore inventory for order item ID {}: Inventory link is missing.", item.getOrderItemId());
+                // Decide if this should halt the process or just be logged.
+            }
+        }
+        log.info("Inventory restoration process completed for order {}", order.getOrderId());
+    }
+
+
+    // --- Helper Methods (mapOrderToResponseDTO, mapOrderItemToResponseDTO, generateOrderCode) ---
+
     private OrderResponseDTO mapOrderToResponseDTO(Order order) {
-        if (order == null) {
-            log.warn("Attempted to map a null Order object."); // Log if order is null
-            return null;
-        }
         OrderResponseDTO dto = new OrderResponseDTO();
-        try { // Wrap mapping logic in try-catch
-            dto.setOrderId(order.getOrderId());
-            dto.setOrderCode(order.getOrderCode());
+        dto.setOrderId(order.getOrderId());
+        dto.setOrderCode(order.getOrderCode());
 
-            // User details
-            User user = order.getUser();
-            if (user != null) {
-                dto.setUserId(user.getUserId());
-                dto.setUserFullName(user.getFullName()); // Verify User has getFullName()
-            } else {
-                log.warn("Order ID {} has a null User.", order.getOrderId());
-            }
-
-            // Branch details
-            Branch branch = order.getBranch();
-            if (branch != null) {
-                dto.setBranchId(branch.getBranchId());
-                dto.setBranchName(branch.getName()); // Verify Branch has getName()
-            } else {
-                log.warn("Order ID {} has a null Branch.", order.getOrderId());
-            }
-
-            dto.setOrderDate(order.getOrderDate());
-
-            // Shipping details
-            ShippingMethod shippingMethod = order.getShippingMethod();
-            if (shippingMethod != null) {
-                dto.setShippingMethodId(shippingMethod.getMethodId());
-                dto.setShippingMethodName(shippingMethod.getName()); // Verify ShippingMethod has getName()
-            } else {
-                log.warn("Order ID {} has a null ShippingMethod.", order.getOrderId());
-            }
-
-            // Order Status details
-            OrderStatus orderStatus = order.getOrderStatus();
-            if (orderStatus != null) {
-                dto.setOrderStatusId(orderStatus.getStatusId());
-                dto.setOrderStatusName(orderStatus.getStatusName()); // Verify OrderStatus has getStatusName()
-            } else {
-                log.warn("Order ID {} has a null OrderStatus.", order.getOrderId());
-            }
-
-            // Payment details
-            PaymentType paymentType = order.getPaymentType();
-            if (paymentType != null) {
-                dto.setPaymentTypeId(paymentType.getPaymentTypeId());
-                dto.setPaymentTypeName(paymentType.getTypeName()); // Verify PaymentType has getTypeName()
-            } else {
-                log.warn("Order ID {} has a null PaymentType.", order.getOrderId());
-            }
-            dto.setPaymentStatus(order.getPaymentStatus());
-
-            dto.setNotes(order.getNotes());
-            dto.setRequiresConsultation(order.getRequiresConsultation());
-
-            // Assigned Staff details
-            Staff assignedStaff = order.getAssignedStaff();
-            if (assignedStaff != null) {
-                dto.setAssignedStaffId(assignedStaff.getStaffId()); // Verify Staff has getStaffId()
-                dto.setAssignedStaffName(assignedStaff.getFullName()); // Verify Staff has getFullName()
-            } else {
-                // Staff might not be assigned yet, this is likely okay. Log as debug if needed.
-                // log.debug("Order ID {} has no assigned staff.", order.getOrderId());
-                dto.setAssignedStaffId(null);
-                dto.setAssignedStaffName(null);
-            }
-
-            dto.setConsultationStatus(order.getConsultationStatus());
-
-            // Amounts
-            dto.setSubtotalAmount(order.getSubtotalAmount());
-            dto.setShippingFee(order.getShippingFee());
-            dto.setDiscountAmount(order.getDiscountAmount());
-            dto.setFinalAmount(order.getFinalAmount());
-
-            // Shipping Address
-            dto.setShippingAddress(order.getShippingAddress()); // Verify Order has getShippingAddress()
-
-            // Timestamps
-            dto.setCreatedAt(order.getCreatedAt());
-            dto.setUpdatedAt(order.getUpdatedAt());
-
-            // Order Items
-            if (order.getOrderItems() != null) {
-                dto.setOrderItems(order.getOrderItems().stream()
-                        .map(this::mapOrderItemToResponseDTO) // Calls the updated item mapper below
-                        .collect(Collectors.toList()));
-            } else {
-                log.warn("Order ID {} has null OrderItems collection.", order.getOrderId());
-                dto.setOrderItems(Collections.emptyList()); // Use empty list instead of null
-            }
-
-        } catch (Exception e) {
-            // Log the exception during mapping
-            log.error("Exception during mapping for Order ID {}: {}", order.getOrderId(), e.getMessage(), e);
-            // Rethrow as a runtime exception to signal a server error (should lead to 500)
-            throw new RuntimeException("Failed to map Order to DTO for Order ID: " + order.getOrderId(), e);
+        // Map User info (handle potential null)
+        if (order.getUser() != null) {
+            dto.setUserId(order.getUser().getUserId());
+            dto.setUserFullName(order.getUser().getFullName()); // Assuming User entity has getFullName()
         }
+
+        // Map Branch info (handle potential null)
+        if (order.getBranch() != null) {
+            dto.setBranchId(order.getBranch().getBranchId());
+            dto.setBranchName(order.getBranch().getName()); // Assuming Branch entity has getName()
+        }
+
+        dto.setOrderDate(order.getOrderDate());
+
+        // Map Shipping Method info (handle potential null)
+        if (order.getShippingMethod() != null) {
+            dto.setShippingMethodId(order.getShippingMethod().getMethodId());
+            dto.setShippingMethodName(order.getShippingMethod().getName()); // Assuming ShippingMethod has getName()
+        }
+
+        // Map Order Status info (handle potential null)
+        if (order.getOrderStatus() != null) {
+            dto.setOrderStatusId(order.getOrderStatus().getStatusId());
+            dto.setOrderStatusName(order.getOrderStatus().getStatusName()); // Assuming OrderStatus has getStatusName()
+        }
+
+        dto.setSubtotalAmount(order.getSubtotalAmount());
+        dto.setShippingFee(order.getShippingFee());
+        dto.setDiscountAmount(order.getDiscountAmount());
+        dto.setFinalAmount(order.getFinalAmount());
+
+        // Map Payment Type info (handle potential null)
+        if (order.getPaymentType() != null) {
+            dto.setPaymentTypeId(order.getPaymentType().getPaymentTypeId());
+            dto.setPaymentTypeName(order.getPaymentType().getTypeName()); // Assuming PaymentType has getTypeName()
+        }
+
+        dto.setPaymentStatus(order.getPaymentStatus());
+        dto.setNotes(order.getNotes());
+        dto.setRequiresConsultation(order.getRequiresConsultation());
+
+        // Map Assigned Staff info (handle potential null)
+        if (order.getAssignedStaff() != null) {
+            dto.setAssignedStaffId(order.getAssignedStaff().getStaffId());
+            dto.setAssignedStaffName(order.getAssignedStaff().getFullName()); // Assuming Staff has getFullName()
+        }
+
+        dto.setConsultationStatus(order.getConsultationStatus());
+        dto.setCreatedAt(order.getCreatedAt());
+        dto.setUpdatedAt(order.getUpdatedAt());
+        dto.setCancelledAt(order.getCancelledAt()); // Map the cancelledAt field
+
+        // Map OrderItems (handle potential null or empty list)
+        if (order.getOrderItems() != null && !order.getOrderItems().isEmpty()) {
+            dto.setOrderItems(order.getOrderItems().stream()
+                    .map(this::mapOrderItemToResponseDTO) // Use the existing helper method
+                    .collect(Collectors.toList()));
+        } else {
+            dto.setOrderItems(Collections.emptyList()); // Set to empty list if null or empty
+        }
+
+        dto.setShippingAddress(order.getShippingAddress()); // Map shipping address
+
+        // Determine if the order is cancellable based on its current status
+        String currentStatus = (order.getOrderStatus() != null) ? order.getOrderStatus().getStatusName().toUpperCase() : "";
+        dto.setIsCancellable(CANCELLABLE_STATUSES.contains(currentStatus));
+
         return dto;
     }
 
-    // --- Updated mapOrderItemToResponseDTO with error handling ---
+    // Ensure mapOrderItemToResponseDTO exists
     private OrderItemResponseDTO mapOrderItemToResponseDTO(OrderItem item) {
-        if (item == null) {
-            log.warn("Attempted to map a null OrderItem.");
-            return null;
-        }
         OrderItemResponseDTO dto = new OrderItemResponseDTO();
-        try { // Wrap mapping logic in try-catch
-            dto.setOrderItemId(item.getOrderItemId());
+        dto.setOrderItemId(item.getOrderItemId());
 
-            Product product = item.getProduct();
-            if (product != null) {
-                dto.setProductId(product.getId());
-                dto.setProductName(product.getName()); // Verify Product has getName()
-            } else {
-                log.warn("OrderItem ID {} has a null Product.", item.getOrderItemId());
+        Product product = item.getProduct();
+        if (product != null) {
+            dto.setProductId(product.getId());
+            dto.setProductName(product.getName());
+            // Assuming OrderItemResponseDTO has setImageUrl and Product has getImageUrl
+             try {
+                 // Direct method call is preferred
+                 dto.setProductImageUrl(product.getImageUrl());
+             } catch (Exception e) {
+                 // Log if the setter doesn't exist or fails
+                 log.trace("Could not set image URL for product ID {} on OrderItemResponseDTO", product.getId(), e);
+                 dto.setProductImageUrl(null); // Ensure it's null if setting fails
+             }
+        } else {
+            log.warn("Product is null for OrderItem ID: {}", item.getOrderItemId());
+            dto.setProductId(null);
+            dto.setProductName("Product information missing");
+             try {
+                 Method setImageUrlMethod = OrderItemResponseDTO.class.getMethod("setProductImageUrl", String.class);
+                 setImageUrlMethod.invoke(dto, (String) null); // Set image URL to null
+            } catch (NoSuchMethodException e) {
+                 // Already logged above, do nothing
+            } catch (Exception e) {
+                 log.error("Error setting image URL to null via reflection", e);
             }
-
-            dto.setQuantity(item.getQuantity());
-            dto.setPriceAtPurchase(item.getPriceAtPurchase());
-            dto.setSubtotal(item.getSubtotal());
-        } catch (Exception e) {
-            // Log the exception during mapping
-            log.error("Exception during mapping for OrderItem ID {}: {}", item.getOrderItemId(), e.getMessage(), e);
-            // Rethrow as a runtime exception
-            throw new RuntimeException("Failed to map OrderItem to DTO for OrderItem ID: " + item.getOrderItemId(), e);
         }
+
+        dto.setQuantity(item.getQuantity());
+        dto.setPriceAtPurchase(item.getPriceAtPurchase());
+        dto.setSubtotal(item.getSubtotal());
+
         return dto;
     }
-    // --- End Helper Methods ---
-
 
     private String generateOrderCode() {
-        // Simple unique code generation (can be improved)
+        // Simple implementation using UUID (first 8 chars)
+        // You can customize this logic (e.g., timestamp + sequence)
         return "ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
     }
 }

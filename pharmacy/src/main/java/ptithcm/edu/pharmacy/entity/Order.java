@@ -94,6 +94,8 @@ public class Order {
     @UpdateTimestamp // Add annotation
     private LocalDateTime updatedAt;
 
+    @Column(name = "cancelled_at")
+    private LocalDateTime cancelledAt;
     // Change FetchType.EAGER to FetchType.LAZY
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY) // Changed to LAZY
     @JsonManagedReference

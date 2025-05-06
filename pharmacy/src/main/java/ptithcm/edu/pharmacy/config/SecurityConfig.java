@@ -5,7 +5,9 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -19,23 +21,33 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
+import lombok.RequiredArgsConstructor; 
 import ptithcm.edu.pharmacy.security.JwtAuthenticationFilter;
-import org.springframework.http.HttpMethod;
+
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider; // Add if needed for AuthenticationProvider bean
+import org.springframework.security.core.userdetails.UserDetailsService; // Add if needed for AuthenticationProvider bean
+
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+@RequiredArgsConstructor // If using Lombok
 public class SecurityConfig {
 
     @Autowired
     private JwtAuthenticationFilter jwtAuthFilter;
 
+    // --- Add UserDetailsService injection if needed for AuthenticationProvider ---
+    @Autowired
+    private UserDetailsService userDetailsService;
+    // --- End injection ---
+
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(AbstractHttpConfigurer::disable)
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .cors(cors -> cors.configurationSource(corsConfigurationSource())) // This line calls the method
             .authorizeHttpRequests(auth -> auth
                 // Permit public GET access to specific resources
                 .requestMatchers(HttpMethod.GET,
@@ -99,27 +111,44 @@ public class SecurityConfig {
         return http.build();
     }
 
+    // --- Add this Bean definition ---
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
+    }
+    // --- End of Bean definition ---
+
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    // --- Define the corsConfigurationSource Bean ---
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
-    }
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        // Configure allowed origins (e.g., your frontend URL)
+        // Use "*" for development/testing, but be more specific in production
+        configuration.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:8081", "http://localhost:5173")); // Example origins
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type"));
+        configuration.setAllowCredentials(true); // Allow credentials
 
-    // --- THÊM CORS CONFIG ---
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173")); // FE URL
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
-        config.setAllowCredentials(true); // Allow cookies, Authorization Header
-    
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
+        source.registerCorsConfiguration("/**", configuration); // Apply this configuration to all paths
         return source;
     }
+    // --- End corsConfigurationSource Bean ---
+
+
+    // --- Define the AuthenticationProvider Bean ---
+    @Bean
+    public AuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(userDetailsService); // Set the UserDetailsService
+        authProvider.setPasswordEncoder(passwordEncoder()); // Set the PasswordEncoder
+        return authProvider;
+    }
+    // --- End AuthenticationProvider Bean ---
 }

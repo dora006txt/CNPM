@@ -35,6 +35,9 @@ public class OrderResponseDTO {
     private ConsultationStatus consultationStatus;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private LocalDateTime cancelledAt; // Keep this one
+    private Boolean isCancellable; // To indicate if the order can be cancelled
     private List<OrderItemResponseDTO> orderItems;
     private String shippingAddress; // Add the user's address here
+    // private LocalDateTime cancelled_at; // Remove this duplicate field
 }

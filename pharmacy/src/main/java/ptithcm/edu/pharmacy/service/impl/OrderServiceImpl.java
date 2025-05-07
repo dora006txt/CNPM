@@ -15,9 +15,12 @@ import java.util.Set;
 import ptithcm.edu.pharmacy.service.OrderService;
 import ptithcm.edu.pharmacy.service.exception.InsufficientStockException;
 import ptithcm.edu.pharmacy.service.exception.ShoppingCartNotFoundException; // <-- Add this import
+import ptithcm.edu.pharmacy.repository.PromotionRepository; // Add this import
+import ptithcm.edu.pharmacy.entity.Promotion; // Add this import
+import ptithcm.edu.pharmacy.entity.DiscountType; // Add this import
+import java.math.RoundingMode; // Add this import
 
 import jakarta.persistence.EntityNotFoundException; // Ensure correct import
-
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -26,9 +29,12 @@ import java.util.HashSet;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.List; // Import List
+import java.util.Optional;
+
 import org.springframework.security.access.AccessDeniedException; // For authorization check
-import org.slf4j.Logger; // Add logger import
-import org.slf4j.LoggerFactory; // Ensure LoggerFactory is imported
+import org.slf4j.Logger; 
+import org.slf4j.LoggerFactory; 
+
 @Service
 @RequiredArgsConstructor 
 public class OrderServiceImpl implements OrderService {
@@ -45,7 +51,9 @@ public class OrderServiceImpl implements OrderService {
     private final BranchInventoryRepository branchInventoryRepository;
     private final ShoppingCartRepository shoppingCartRepository;
     private final ShoppingCartItemRepository shoppingCartItemRepository; // Need this to delete items
+    private final PromotionRepository promotionRepository; // Add this line
     private static final Logger log = LoggerFactory.getLogger(OrderServiceImpl.class); // Add logger instance
+    // private final DiscountRepository discountRepository; // In a real app, inject this
 
 
     @Override
@@ -147,8 +155,83 @@ public class OrderServiceImpl implements OrderService {
         order.setSubtotalAmount(subtotal);
         BigDecimal shippingFee = shippingMethod.getBaseCost() != null ? shippingMethod.getBaseCost() : BigDecimal.ZERO;
         order.setShippingFee(shippingFee);
-        order.setDiscountAmount(BigDecimal.ZERO); 
-        order.setFinalAmount(subtotal.add(shippingFee).subtract(order.getDiscountAmount()));
+        
+        // --- Apply Promotion Code Logic ---
+        BigDecimal calculatedDiscount = BigDecimal.ZERO;
+        String promotionCode = createOrderRequestDTO.getPromotionCode();
+        String effectiveAppliedPromotionCode = null;
+        Promotion appliedPromotionEntity = null; // To store the promotion entity if applied
+
+        if (promotionCode != null && !promotionCode.isBlank()) {
+            log.info("Attempting to apply promotion code: {}", promotionCode);
+            Optional<Promotion> promotionOpt = promotionRepository.findByCode(promotionCode);
+
+            if (promotionOpt.isPresent()) {
+                Promotion promotion = promotionOpt.get();
+                LocalDateTime now = LocalDateTime.now();
+                boolean isValid = true;
+
+                if (!promotion.getIsActive()) {
+                    log.warn("Promotion code {} is not active.", promotionCode);
+                    isValid = false;
+                }
+                if (isValid && promotion.getStartDate() != null && now.isBefore(promotion.getStartDate())) {
+                    log.warn("Promotion code {} is not yet valid. Starts at {}", promotionCode, promotion.getStartDate());
+                    isValid = false;
+                }
+                if (isValid && promotion.getEndDate() != null && now.isAfter(promotion.getEndDate())) {
+                    log.warn("Promotion code {} has expired. Ended at {}", promotionCode, promotion.getEndDate());
+                    isValid = false;
+                }
+                if (isValid && promotion.getMinOrderValue() != null && subtotal.compareTo(promotion.getMinOrderValue()) < 0) {
+                    log.warn("Promotion code {} requires a minimum subtotal of {}. Current subtotal: {}", promotionCode, promotion.getMinOrderValue(), subtotal);
+                    isValid = false;
+                }
+                if (isValid && promotion.getTotalUsageLimit() != null && promotion.getTotalUsedCount() >= promotion.getTotalUsageLimit()) {
+                    log.warn("Promotion code {} has reached its total usage limit.", promotionCode);
+                    isValid = false;
+                }
+                // Note: Per-customer usage limits and specific applicability (category/product/branch) are not checked here for simplicity.
+
+                if (isValid) {
+                    if (promotion.getDiscountType() == DiscountType.PERCENTAGE) {
+                        calculatedDiscount = subtotal.multiply(promotion.getDiscountValue().divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP));
+                        if (calculatedDiscount.compareTo(subtotal) > 0) { // Cap discount at subtotal
+                            calculatedDiscount = subtotal;
+                        }
+                        log.info("Applied PERCENTAGE discount of {} for code {}. Original subtotal: {}, Discount value: {}%", calculatedDiscount, promotionCode, subtotal, promotion.getDiscountValue());
+                    } else if (promotion.getDiscountType() == DiscountType.FIXED_AMOUNT) {
+                        calculatedDiscount = promotion.getDiscountValue();
+                        if (calculatedDiscount.compareTo(subtotal) > 0) { // Cap discount at subtotal
+                            calculatedDiscount = subtotal;
+                        }
+                        log.info("Applied FIXED_AMOUNT discount of {} for code {}. Original subtotal: {}, Discount value: {}", calculatedDiscount, promotionCode, subtotal, promotion.getDiscountValue());
+                    } else {
+                        log.warn("Promotion code {} has an unsupported discount type: {}", promotionCode, promotion.getDiscountType());
+                    }
+
+                    if (calculatedDiscount.compareTo(BigDecimal.ZERO) > 0) {
+                        effectiveAppliedPromotionCode = promotion.getCode(); // Store the code that was successfully applied
+                        appliedPromotionEntity = promotion; // Store the entity
+                        log.info("Promotion {} successfully applied with discount amount: {}", effectiveAppliedPromotionCode, calculatedDiscount);
+                    } else {
+                        log.warn("Calculated discount for promotion code {} is zero or less. Not applying.", promotionCode);
+                        // No need to set effectiveAppliedPromotionCode or appliedPromotionEntity if discount is zero
+                    }
+                } else {
+                    log.warn("Promotion code {} is not valid or not applicable.", promotionCode);
+                }
+            } else {
+                log.warn("Promotion code {} not found in the database.", promotionCode);
+            }
+        }
+
+        order.setDiscountAmount(calculatedDiscount);
+        order.setAppliedPromotionCode(effectiveAppliedPromotionCode);
+
+        // 5c. Calculate Final Amount
+        BigDecimal finalAmount = subtotal.add(shippingFee).subtract(calculatedDiscount);
+        order.setFinalAmount(finalAmount);
 
         // Set shipping address - UNCOMMENT THIS LOGIC
         if (createOrderRequestDTO.getShippingAddress() != null && !createOrderRequestDTO.getShippingAddress().isBlank()) {
@@ -300,6 +383,7 @@ public List<OrderResponseDTO> findOrdersByUserId(Integer userId) {
 
     // --- Helper Methods (mapOrderToResponseDTO, mapOrderItemToResponseDTO, generateOrderCode) ---
 
+    // --- Helper method to map Order to OrderResponseDTO ---
     private OrderResponseDTO mapOrderToResponseDTO(Order order) {
         OrderResponseDTO dto = new OrderResponseDTO();
         dto.setOrderId(order.getOrderId());
@@ -334,6 +418,7 @@ public List<OrderResponseDTO> findOrdersByUserId(Integer userId) {
         dto.setSubtotalAmount(order.getSubtotalAmount());
         dto.setShippingFee(order.getShippingFee());
         dto.setDiscountAmount(order.getDiscountAmount());
+        dto.setAppliedPromotionCode(order.getAppliedPromotionCode()); // Map the applied promotion code
         dto.setFinalAmount(order.getFinalAmount());
 
         // Map Payment Type info (handle potential null)
@@ -385,25 +470,25 @@ public List<OrderResponseDTO> findOrdersByUserId(Integer userId) {
             dto.setProductId(product.getId());
             dto.setProductName(product.getName());
             // Assuming OrderItemResponseDTO has setImageUrl and Product has getImageUrl
-             try {
+            try {
                  // Direct method call is preferred
-                 dto.setProductImageUrl(product.getImageUrl());
-             } catch (Exception e) {
+                dto.setProductImageUrl(product.getImageUrl());
+            } catch (Exception e) {
                  // Log if the setter doesn't exist or fails
-                 log.trace("Could not set image URL for product ID {} on OrderItemResponseDTO", product.getId(), e);
+                log.trace("Could not set image URL for product ID {} on OrderItemResponseDTO", product.getId(), e);
                  dto.setProductImageUrl(null); // Ensure it's null if setting fails
-             }
+            }
         } else {
             log.warn("Product is null for OrderItem ID: {}", item.getOrderItemId());
             dto.setProductId(null);
             dto.setProductName("Product information missing");
-             try {
-                 Method setImageUrlMethod = OrderItemResponseDTO.class.getMethod("setProductImageUrl", String.class);
+            try {
+                Method setImageUrlMethod = OrderItemResponseDTO.class.getMethod("setProductImageUrl", String.class);
                  setImageUrlMethod.invoke(dto, (String) null); // Set image URL to null
             } catch (NoSuchMethodException e) {
                  // Already logged above, do nothing
             } catch (Exception e) {
-                 log.error("Error setting image URL to null via reflection", e);
+                log.error("Error setting image URL to null via reflection", e);
             }
         }
 

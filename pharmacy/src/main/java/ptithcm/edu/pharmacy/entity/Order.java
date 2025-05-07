@@ -61,6 +61,9 @@ public class Order {
     @Column(name = "discount_amount")
     private BigDecimal discountAmount = BigDecimal.ZERO;
 
+    @Column(name = "applied_promotion_code") 
+    private String appliedPromotionCode;     
+
     @Column(name = "final_amount", nullable = false)
     private BigDecimal finalAmount = BigDecimal.ZERO;
 

@@ -203,6 +203,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     // --- Helper methods to map Entities to DTOs ---
 
     // Update mapToShoppingCartDTO to include branchId and potentially branch name
+    @SuppressWarnings("null")
     private ShoppingCartDTO mapToShoppingCartDTO(ShoppingCart cart) {
         List<ShoppingCartItemDTO> itemDTOs = new java.util.ArrayList<>();
         if (cart != null && cart.getCartItems() != null) {
@@ -253,17 +254,6 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
             }
         }
         return dto;
-    }
-
-    private ProductCartItemDTO mapToProductCartItemDTO(Product product, BranchInventory inventory) {
-        // Assuming Product and BranchInventory are not null based on the caller's check
-        return ProductCartItemDTO.builder()
-                .productId(product.getId())
-                .productName(product.getName())
-                .imageUrl(product.getImageUrl())
-                .price(inventory.getPrice()) // Or getDiscountPrice() based on your logic
-                .unit(product.getUnit()) // Assuming Product has a unit field
-                .build();
     }
 
     @Override

@@ -105,6 +105,9 @@ public class SecurityConfig {
                 // --- Staff Management (Admin) ---
                 .requestMatchers("/api/admin/staff/**").hasAuthority("ADMIN") // Add this rule
 
+                // --- Promotion Management (Admin) ---
+                .requestMatchers("/api/admin/promotions/**").hasAuthority("ADMIN")
+
                 // Secure all other requests
                 .anyRequest().authenticated()
             )

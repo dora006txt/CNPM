@@ -10,4 +10,5 @@ public class CreateOrderRequestDTO {
     private String notes; // Optional notes from the customer
     private Boolean requiresConsultation = false; // Default to false if not provided
     private String shippingAddress; // Optional, can override user's default
+    private String promotionCode; // Add this field for the promotion code
 }

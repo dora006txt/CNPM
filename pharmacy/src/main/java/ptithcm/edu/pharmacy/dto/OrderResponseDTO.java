@@ -24,6 +24,7 @@ public class OrderResponseDTO {
     private BigDecimal subtotalAmount;
     private BigDecimal shippingFee;
     private BigDecimal discountAmount;
+    private String appliedPromotionCode; // Add this field
     private BigDecimal finalAmount;
     private Integer paymentTypeId;
     private String paymentTypeName; // Example: Add payment type name

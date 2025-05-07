@@ -1,6 +1,5 @@
 package ptithcm.edu.pharmacy.service;
 
-import org.apache.commons.lang3.RandomStringUtils; // For random password generation
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +30,7 @@ import ptithcm.edu.pharmacy.security.JwtUtils;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.security.SecureRandom; // Import SecureRandom
 
 @Service
 public class UserService { // Or your relevant service name
@@ -168,8 +168,16 @@ public class UserService { // Or your relevant service name
 
             // --- Replace deprecated method ---
             // Generate a temporary password (e.g., 10 alphanumeric characters)
-            // String temporaryPassword = RandomStringUtils.randomAlphanumeric(10); // Deprecated
-            String temporaryPassword = RandomStringUtils.random(10, true, true); // Generate alphanumeric password using non-deprecated method
+            String upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            String lower = upper.toLowerCase();
+            String digits = "0123456789";
+            String alphanum = upper + lower + digits;
+            SecureRandom random = new SecureRandom();
+            StringBuilder sb = new StringBuilder(10);
+            for (int i = 0; i < 10; i++) {
+                sb.append(alphanum.charAt(random.nextInt(alphanum.length())));
+            }
+            String temporaryPassword = sb.toString();
             // --- End replacement ---
             
             // Add more visible console output for the new password
@@ -189,9 +197,9 @@ public class UserService { // Or your relevant service name
             // Send the temporary password via email
             String emailSubject = "Your Password Reset Request";
             String emailText = "Hello " + user.getFullName() + ",\n\n" // Assuming user has getFullName()
-                             + "Your temporary password is: " + temporaryPassword + "\n\n"
-                             + "Please log in using this temporary password and change it immediately for security reasons.\n\n"
-                             + "Regards,\nYour Pharmacy Application";
+                            + "Your temporary password is: " + temporaryPassword + "\n\n"
+                            + "Please log in using this temporary password and change it immediately for security reasons.\n\n"
+                            + "Regards,\nYour Pharmacy Application";
 
             emailService.sendPasswordResetEmail(user.getEmail(), emailSubject, emailText);
 

@@ -8,7 +8,7 @@ import java.util.Set;
 
 @Data
 @Entity
-@Table(name = "Promotions")
+@Table(name = "Promotions") // Assuming your table name
 public class Promotion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -49,8 +49,8 @@ public class Promotion {
     private Integer totalUsedCount = 0;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "applicable_scope")
-    private ApplicableScope applicableScope = ApplicableScope.ALL;
+    @Column(name = "applicable_scope") // Ensure this matches your database column name
+    private ApplicableScope applicableScope;
 
     @Column(name = "is_active")
     private Boolean isActive = true;

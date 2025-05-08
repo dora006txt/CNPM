@@ -71,4 +71,67 @@ public class OrderController {
             return ResponseEntity.ok(order);
         } catch (EntityNotFoundException e) {
             return ResponseEntity.notFound().build();
-        } catch (AccessDeniedE
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build(); // Return 403 if not authorized
+        } catch (Exception e) {
+            // Log the exception in a real application
+            System.err.println("Error fetching order ID " + orderId + ": " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    // --- End Add Endpoint ---
+
+    // --- Add Endpoint for Order Cancellation ---
+    // @PostMapping("/{orderId}/cancel") // Remove or comment out this line
+    @PatchMapping("/{orderId}/cancel") // Change to PatchMapping
+    public ResponseEntity<?> cancelOrder(
+            @PathVariable Integer orderId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        Integer userId = getUserIdFromPrincipal(userDetails);
+        if (userId == null) {
+            System.err.println("Could not determine user ID from principal for cancelOrder");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        try {
+            OrderResponseDTO cancelledOrder = orderService.cancelOrder(orderId, userId);
+            return ResponseEntity.ok(cancelledOrder);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Error cancelling order ID " + orderId + ": " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
+        }
+    }
+    // --- End Endpoint for Order Cancellation ---
+
+    // --- Corrected helper method to extract User ID ---
+    private Integer getUserIdFromPrincipal(UserDetails userDetails) {
+        if (userDetails == null) {
+            return null;
+        }
+
+        String username = userDetails.getUsername(); // Username is the phone number
+        if (username == null || username.isBlank()) {
+            System.err.println("Username (phone number) from principal is null or blank.");
+            return null;
+        }
+
+        // Fetch the User entity using the username (phone number)
+        User user = userRepository.findByPhoneNumber(username) // Assuming findByPhoneNumber exists
+                 .orElse(null); // Handle case where user not found
+    
+        if (user == null) {
+            System.err.println("User not found in database for phone number: " + username);
+            return null;
+        }
+    
+        // Return the actual primary key ID
+        return user.getUserId(); // Returns the user's ID
+    }
+}

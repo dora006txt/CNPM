@@ -158,11 +158,11 @@ public class BranchInventoryServiceImpl implements BranchInventoryService {
 
         if (inventory.getBranch() != null) {
             dto.setBranchId(inventory.getBranch().getBranchId());
-            // dto.setBranchName(inventory.getBranch().getName()); // Optionally include name
+            dto.setBranchName(inventory.getBranch().getName()); // Optionally include name
         }
         if (inventory.getProduct() != null) {
             dto.setProductId(inventory.getProduct().getId());
-             // dto.setProductName(inventory.getProduct().getName()); // Optionally include name
+            dto.setProductName(inventory.getProduct().getName()); // Optionally include name
         }
         return dto;
     }

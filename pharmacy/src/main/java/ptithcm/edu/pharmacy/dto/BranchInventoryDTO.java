@@ -9,7 +9,9 @@ import java.time.LocalDateTime;
 public class BranchInventoryDTO {
     private Integer inventoryId;
     private Integer branchId; // ID of the related branch
+    private String branchName; // Name of the related branch
     private Integer productId; // ID of the related product
+    private String productName; // Name of the related product
     private Integer quantityOnHand;
     private BigDecimal price;
     private BigDecimal discountPrice;

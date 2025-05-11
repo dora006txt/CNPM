@@ -58,7 +58,8 @@ public class SecurityConfig {
                     "/api/v1/branches", "/api/v1/branches/**", // View branches
                     "/api/v1/inventory/branch/{branchId}/products/display", // View product list display per branch
                     "/api/v1/inventory/branch/{branchId}/product/{productId}/display", // View single product display
-                    "/api/public/doctors", "/api/public/doctors/**" // View doctors information
+                    "/api/public/doctors", "/api/public/doctors/**", // View doctors information
+                    "/api/banners/active" // Add public banner endpoint
                     // REMOVE "/api/payment-types" from here if it exists, as it will be secured below
                 ).permitAll()
                 // Permit public POST access for authentication AND forgot password
@@ -107,6 +108,9 @@ public class SecurityConfig {
 
                 // --- Promotion Management (Admin) ---
                 .requestMatchers("/api/admin/promotions/**").hasAuthority("ADMIN")
+
+                // --- Banner Management (Admin) ---
+                .requestMatchers("/api/admin/banners/**").hasAuthority("ADMIN") // Add this rule
 
                 // Secure all other requests
                 .anyRequest().authenticated()

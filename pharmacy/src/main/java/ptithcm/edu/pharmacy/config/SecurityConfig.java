@@ -59,7 +59,8 @@ public class SecurityConfig {
                     "/api/v1/inventory/branch/{branchId}/products/display", // View product list display per branch
                     "/api/v1/inventory/branch/{branchId}/product/{productId}/display", // View single product display
                     "/api/public/doctors", "/api/public/doctors/**", // View doctors information
-                    "/api/banners/active" // Add public banner endpoint
+                    "/api/banners/active", // Add public banner endpoint
+                    "/api/manufacturers", "/api/manufacturers/**" // Allow public GET for manufacturers
                     // REMOVE "/api/payment-types" from here if it exists, as it will be secured below
                 ).permitAll()
                 // Permit public POST access for authentication AND forgot password
@@ -111,6 +112,12 @@ public class SecurityConfig {
 
                 // --- Banner Management (Admin) ---
                 .requestMatchers("/api/admin/banners/**").hasAuthority("ADMIN") // Add this rule
+
+                // --- Manufacturer Management (Admin for CUD, public for R) ---
+                .requestMatchers(HttpMethod.POST, "/api/manufacturers").hasAuthority("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/manufacturers/**").hasAuthority("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/manufacturers/**").hasAuthority("ADMIN")
+
 
                 // Secure all other requests
                 .anyRequest().authenticated()

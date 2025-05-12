@@ -37,9 +37,11 @@ public class Banner {
     @Column(name = "end_date")
     private LocalDateTime endDate;
 
+    @Builder.Default
     @Column(name = "is_active")
     private boolean isActive = true;
 
+    @Builder.Default
     @Column(name = "display_order")
     private int displayOrder = 0;
 

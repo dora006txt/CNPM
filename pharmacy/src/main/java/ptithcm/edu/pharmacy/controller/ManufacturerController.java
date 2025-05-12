@@ -13,6 +13,7 @@ import ptithcm.edu.pharmacy.entity.Manufacturer;
 import ptithcm.edu.pharmacy.service.ManufacturerService;
 
 import java.util.HashMap;
+import java.util.List; // Added import
 import java.util.Map;
 
 @RestController
@@ -26,8 +27,6 @@ public class ManufacturerController {
     public ResponseEntity<?> createManufacturer(@Valid @RequestBody ManufacturerRequest request) {
         try {
             Manufacturer createdManufacturer = manufacturerService.createManufacturer(request);
-            // Avoid sending back the full Country object if not needed, or create a ManufacturerResponse DTO
-            // For now, returning the entity as is (includes country details)
             return ResponseEntity.status(HttpStatus.CREATED).body(createdManufacturer);
         } catch (RuntimeException e) {
             Map<String, String> errorResponse = new HashMap<>();
@@ -36,16 +35,82 @@ public class ManufacturerController {
             HttpStatus status;
             if (e instanceof EntityNotFoundException) {
                 status = HttpStatus.NOT_FOUND; // 404 if country not found
-            } else if (e instanceof RuntimeException && e.getMessage().contains("already exists")) {
+            } else if (e.getMessage() != null && e.getMessage().contains("already exists")) {
                 status = HttpStatus.CONFLICT; // 409 if manufacturer name exists
+            } else if (e instanceof IllegalArgumentException) {
+                status = HttpStatus.BAD_REQUEST; // 400 for validation/argument issues
             } else {
-                status = HttpStatus.BAD_REQUEST; // 400 for other validation/argument issues
+                status = HttpStatus.INTERNAL_SERVER_ERROR; // Default to 500 for other runtime exceptions
             }
             return ResponseEntity.status(status).body(errorResponse);
         } catch (Exception e) {
-            // Catch unexpected errors
             Map<String, String> errorResponse = new HashMap<>();
             errorResponse.put("error", "An unexpected error occurred while creating the manufacturer.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
+    @GetMapping
+    public ResponseEntity<List<Manufacturer>> getAllManufacturers() {
+        List<Manufacturer> manufacturers = manufacturerService.getAllManufacturers();
+        return ResponseEntity.ok(manufacturers);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getManufacturerById(@PathVariable Integer id) {
+        try {
+            Manufacturer manufacturer = manufacturerService.getManufacturerById(id);
+            return ResponseEntity.ok(manufacturer);
+        } catch (EntityNotFoundException e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+        } catch (Exception e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "An unexpected error occurred while retrieving the manufacturer.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateManufacturer(@PathVariable Integer id, @Valid @RequestBody ManufacturerRequest request) {
+        try {
+            Manufacturer updatedManufacturer = manufacturerService.updateManufacturer(id, request);
+            return ResponseEntity.ok(updatedManufacturer);
+        } catch (RuntimeException e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", e.getMessage());
+
+            HttpStatus status;
+            if (e instanceof EntityNotFoundException) {
+                status = HttpStatus.NOT_FOUND; // 404 if manufacturer or country not found
+            } else if (e.getMessage() != null && e.getMessage().contains("already exists")) {
+                status = HttpStatus.CONFLICT; // 409 if manufacturer name exists
+            } else if (e instanceof IllegalArgumentException) {
+                status = HttpStatus.BAD_REQUEST; // 400 for validation/argument issues
+            } else {
+                status = HttpStatus.INTERNAL_SERVER_ERROR; // Default to 500
+            }
+            return ResponseEntity.status(status).body(errorResponse);
+        } catch (Exception e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "An unexpected error occurred while updating the manufacturer.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteManufacturer(@PathVariable Integer id) {
+        try {
+            manufacturerService.deleteManufacturer(id);
+            return ResponseEntity.noContent().build(); // 204 No Content
+        } catch (EntityNotFoundException e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+        } catch (Exception e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "An unexpected error occurred while deleting the manufacturer.");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }

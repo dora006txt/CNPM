@@ -8,5 +8,6 @@ import lombok.Data;
 public class BrandResponse {
     private Integer id;
     private String name;
+    private String description; // Add description
     // Add other fields if needed
 }

@@ -1,25 +1,23 @@
 package ptithcm.edu.pharmacy.controller;
 
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
+import lombok.RequiredArgsConstructor;
 import ptithcm.edu.pharmacy.dto.UpdateUserRequest;
-import ptithcm.edu.pharmacy.dto.UserResponse; // Assuming you have a UserResponse DTO
-import ptithcm.edu.pharmacy.entity.User;
+import ptithcm.edu.pharmacy.dto.UserResponse;
 import ptithcm.edu.pharmacy.service.UserService;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.List; // Import List
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class UserController {
 
@@ -27,81 +25,85 @@ public class UserController {
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
 
     // --- Endpoint: Get Current User Profile ---
-    @GetMapping("/me")
+    @GetMapping("/users/me") // Path changed to /api/users/me
     public ResponseEntity<UserResponse> getCurrentUserProfile() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
+            log.warn("Attempt to access /users/me without authentication");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+        String currentUsername = authentication.getName(); // This is typically the phone number
+        log.info("Fetching profile for current user: {}", currentUsername);
 
-        String phoneNumber = authentication.getName(); // Assuming phone number is the username
-        User user = userService.getUserByPhoneNumber(phoneNumber);
-        if (user == null) {
-             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Authenticated user not found in database");
+        try {
+            // Assuming username is the phone number used for login
+            UserResponse userResponse = userService.getUserProfileByPhoneNumber(currentUsername);
+            return ResponseEntity.ok(userResponse);
+        } catch (ResponseStatusException e) {
+            log.error("Error fetching profile for user {}: {}", currentUsername, e.getMessage());
+            return ResponseEntity.status(e.getStatusCode()).build();
+        } catch (Exception e) {
+            log.error("Unexpected error fetching profile for user {}: {}", currentUsername, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-
-        UserResponse responseDto = mapUserToResponseDto(user);
-        log.info("Returning profile for user: {}", phoneNumber);
-        return ResponseEntity.ok(responseDto);
     }
 
     // --- Endpoint: Update Current User Profile ---
-    @PutMapping("/me")
-    public ResponseEntity<UserResponse> updateCurrentUserProfile(@RequestBody UpdateUserRequest request) {
-         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    @PutMapping("/users/me") // Path changed to /api/users/me
+    public ResponseEntity<UserResponse> updateCurrentUserProfile(@RequestBody UpdateUserRequest updateUserRequest) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
+            log.warn("Attempt to update profile /users/me without authentication");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+        String currentUsername = authentication.getName(); // This is typically the phone number
+        log.info("Updating profile for current user: {}", currentUsername);
 
-        String phoneNumber = authentication.getName();
-        User currentUser = userService.getUserByPhoneNumber(phoneNumber);
-         if (currentUser == null) {
-             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Authenticated user not found in database");
+        try {
+            UserResponse updatedUser = userService.updateUserProfileByPhoneNumber(currentUsername, updateUserRequest);
+            return ResponseEntity.ok(updatedUser);
+        } catch (ResponseStatusException e) {
+            log.error("Error updating profile for user {}: {}", currentUsername, e.getMessage());
+            return ResponseEntity.status(e.getStatusCode()).body(null); // Or a custom error response
+        } catch (Exception e) {
+            log.error("Unexpected error updating profile for user {}: {}", currentUsername, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-
-        log.info("Received request to update profile for user ID: {}", currentUser.getUserId());
-        User updatedUser = userService.updateUserProfile(currentUser.getUserId(), request);
-        UserResponse responseDto = mapUserToResponseDto(updatedUser);
-        log.info("Profile updated successfully for user ID: {}", currentUser.getUserId());
-        return ResponseEntity.ok(responseDto);
     }
 
+    // --- Admin Endpoints for User Management ---
 
-    // --- Helper mapping function (Create UserResponse DTO if needed) ---
-    private UserResponse mapUserToResponseDto(User user) {
-        if (user == null) return null;
-        // Assuming UserResponse DTO exists with these fields
-        return UserResponse.builder()
-                .id(user.getUserId())
-                .phoneNumber(user.getPhoneNumber())
-                .fullName(user.getFullName())
-                .email(user.getEmail())
-                .dateOfBirth(user.getDateOfBirth())
-                .gender(user.getGender())
-                .isActive(user.getIsActive())
-                .lastLogin_login(user.getLastLogin())
-                .address(user.getAddress())
-                .createdAt(user.getCreatedAt())
-                .updatedAt(user.getUpdatedAt())
-                .roles(user.getRoles().stream().map(role -> role.getRoleName()).collect(Collectors.toSet()))
-                .build();
+    @GetMapping("/admin/users")
+    @PreAuthorize("hasAuthority('ADMIN')") // Add this line
+    public ResponseEntity<List<UserResponse>> getAllUsers() {
+        log.info("Admin request: Get all users");
+        List<UserResponse> users = userService.getAllUsers();
+        return ResponseEntity.ok(users);
     }
 
-    // --- Exception Handler (Optional but Recommended) ---
-    @ExceptionHandler(ResponseStatusException.class)
-    public ResponseEntity<Map<String, String>> handleResponseStatusException(ResponseStatusException ex) {
-        Map<String, String> error = new HashMap<>();
-        error.put("message", ex.getReason());
-        error.put("status", String.valueOf(ex.getStatusCode().value()));
-        log.warn("Returning error response: Status {}, Reason: {}", ex.getStatusCode(), ex.getReason());
-        return new ResponseEntity<>(error, ex.getStatusCode());
+    @GetMapping("/admin/users/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')") // Add this line
+    public ResponseEntity<UserResponse> getUserByIdAsAdmin(@PathVariable Integer id) {
+        log.info("Admin request: Get user by ID: {}", id);
+        try {
+            UserResponse user = userService.getUserByIdAsAdmin(id);
+            return ResponseEntity.ok(user);
+        } catch (ResponseStatusException e) {
+            log.warn("Admin request: User not found with ID {}: {}", id, e.getMessage());
+            return ResponseEntity.status(e.getStatusCode()).build();
+        }
     }
 
-     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, String>> handleGenericException(Exception ex) {
-        Map<String, String> error = new HashMap<>();
-        error.put("message", "An unexpected error occurred.");
-        log.error("Unhandled exception in UserController: {}", ex.getMessage(), ex);
-        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    @DeleteMapping("/admin/users/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')") // Add this line
+    public ResponseEntity<Void> deleteUserAsAdmin(@PathVariable Integer id) {
+        log.info("Admin request: Delete (deactivate) user with ID: {}", id);
+        try {
+            userService.deleteUserAsAdmin(id);
+            return ResponseEntity.noContent().build();
+        } catch (ResponseStatusException e) {
+            log.warn("Admin request: Failed to delete user ID {}: {}", id, e.getMessage());
+            return ResponseEntity.status(e.getStatusCode()).build();
+        }
     }
 }

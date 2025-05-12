@@ -17,18 +17,19 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 import ptithcm.edu.pharmacy.dto.UpdateUserRequest;
 import ptithcm.edu.pharmacy.dto.UserResponse;
-import ptithcm.edu.pharmacy.entity.Role; // Ensure Role is imported if not already
-import java.util.Set; // Import Set
+import ptithcm.edu.pharmacy.entity.Role;
 import java.util.stream.Collectors; // Import Collectors
 import ptithcm.edu.pharmacy.entity.User; // Assuming User entity exists
 import ptithcm.edu.pharmacy.entity.UserRole;
-import ptithcm.edu.pharmacy.entity.UserRoleId; 
+import ptithcm.edu.pharmacy.entity.UserRoleId;
 import ptithcm.edu.pharmacy.repository.UserRepository; // Assuming UserRepository exists
 import ptithcm.edu.pharmacy.repository.RoleRepository; // Import RoleRepository
 import ptithcm.edu.pharmacy.repository.UserRoleRepository; // Import UserRoleRepository
 import ptithcm.edu.pharmacy.security.JwtUtils;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.List; // Import List
 import java.util.Optional;
 import java.security.SecureRandom; // Import SecureRandom
 
@@ -56,7 +57,7 @@ public class UserService { // Or your relevant service name
 
     @Autowired
     private PasswordEncoder passwordEncoder;
-    
+
     @Autowired
     private JwtUtils jwtUtils;
 
@@ -65,12 +66,10 @@ public class UserService { // Or your relevant service name
         org.springframework.security.core.Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequest.getPhoneNumber(),
-                        loginRequest.getPassword()
-                )
-        );
+                        loginRequest.getPassword()));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        
+
         // Generate JWT token
         String jwt = jwtUtils.generateJwtToken(authentication);
 
@@ -92,22 +91,22 @@ public class UserService { // Or your relevant service name
                 .map(role -> role.getRoleName())
                 .toList());
         response.setToken(jwt);
-        
+
         return response;
     }
-    
+
     public User register(RegisterRequest registerRequest) {
         // Check if phone number already exists
         if (userRepository.existsByPhoneNumber(registerRequest.getPhoneNumber())) {
             throw new RuntimeException("Phone number is already in use");
         }
-        
+
         // Check if email already exists (if provided)
-        if (registerRequest.getEmail() != null && !registerRequest.getEmail().isEmpty() 
+        if (registerRequest.getEmail() != null && !registerRequest.getEmail().isEmpty()
                 && userRepository.existsByEmail(registerRequest.getEmail())) {
             throw new RuntimeException("Email is already in use");
         }
-        
+
         // Create new user
         User user = new User();
         user.setPhoneNumber(registerRequest.getPhoneNumber());
@@ -158,6 +157,73 @@ public class UserService { // Or your relevant service name
 
         return savedUser;
     }
+
+    // Method to get user profile by phone number (for authenticated user)
+    @Transactional(readOnly = true)
+    public UserResponse getUserProfileByPhoneNumber(String phoneNumber) {
+        log.info("Fetching profile for phone number: {}", phoneNumber);
+        User user = userRepository.findByPhoneNumber(phoneNumber)
+                .orElseThrow(() -> {
+                    log.warn("User not found with phone number: {}", phoneNumber);
+                    return new ResponseStatusException(HttpStatus.NOT_FOUND, "User profile not found.");
+                });
+        return mapToUserResponse(user);
+    }
+
+    // Method to update user profile by phone number (for authenticated user)
+    @Transactional
+    public UserResponse updateUserProfileByPhoneNumber(String phoneNumber, UpdateUserRequest request) {
+        log.info("Updating profile for phone number: {}", phoneNumber);
+        User user = userRepository.findByPhoneNumber(phoneNumber)
+                .orElseThrow(() -> {
+                    log.warn("User not found with phone number: {}", phoneNumber);
+                    return new ResponseStatusException(HttpStatus.NOT_FOUND, "User profile not found.");
+                });
+
+        // Update allowed fields
+        if (request.getFullName() != null && !request.getFullName().isBlank()) {
+            user.setFullName(request.getFullName());
+        }
+
+        if (request.getEmail() != null && !request.getEmail().isBlank()) {
+            // Check if the new email is different from the current one and if it's already
+            // used by another user
+            if (user.getEmail() == null || !request.getEmail().equalsIgnoreCase(user.getEmail())) {
+                userRepository.findByEmail(request.getEmail()).ifPresent(existingUser -> {
+                    if (!existingUser.getUserId().equals(user.getUserId())) {
+                        log.warn("Attempt to update email to {}, which is already in use by another user.",
+                                request.getEmail());
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                                "Email address is already in use by another account.");
+                    }
+                });
+            }
+            user.setEmail(request.getEmail());
+        } else if (request.getEmail() != null && request.getEmail().isBlank()) { // Allow clearing email
+            user.setEmail(null);
+        }
+
+        if (request.getDateOfBirth() != null) {
+            user.setDateOfBirth(request.getDateOfBirth());
+        }
+
+        if (request.getGender() != null) { // Gender can be set or cleared
+            user.setGender(request.getGender().isBlank() ? null : request.getGender());
+        }
+
+        if (request.getAddress() != null) { // Address can be set or cleared
+            user.setAddress(request.getAddress().isBlank() ? null : request.getAddress());
+        }
+
+        // Password changes should be handled by a dedicated changePassword endpoint
+        // Roles and isActive status should not be updatable by the user themselves here
+
+        user.setUpdatedAt(LocalDateTime.now());
+        User updatedUser = userRepository.save(user);
+        log.info("Profile updated successfully for user ID: {}", updatedUser.getUserId());
+        return mapToUserResponse(updatedUser);
+    }
+
     // --- New Method: Forgot Password ---
     @Transactional
     public boolean processForgotPassword(String email) {
@@ -179,14 +245,15 @@ public class UserService { // Or your relevant service name
             }
             String temporaryPassword = sb.toString();
             // --- End replacement ---
-            
+
             // Add more visible console output for the new password
             System.out.println("============================================================");
             System.out.println("NEW PASSWORD GENERATED for user: " + email);
             System.out.println("TEMPORARY PASSWORD: " + temporaryPassword);
             System.out.println("============================================================");
-            
-            log.info("Generated temporary password for user {}", email); // Log temporarily for debugging if needed, remove in prod
+
+            log.info("Generated temporary password for user {}", email); // Log temporarily for debugging if needed,
+                                                                         // remove in prod
 
             // Encode the temporary password before saving
             // --- Ensure you are setting the correct field (e.g., passwordHash) ---
@@ -197,9 +264,9 @@ public class UserService { // Or your relevant service name
             // Send the temporary password via email
             String emailSubject = "Your Password Reset Request";
             String emailText = "Hello " + user.getFullName() + ",\n\n" // Assuming user has getFullName()
-                            + "Your temporary password is: " + temporaryPassword + "\n\n"
-                            + "Please log in using this temporary password and change it immediately for security reasons.\n\n"
-                            + "Regards,\nYour Pharmacy Application";
+                    + "Your temporary password is: " + temporaryPassword + "\n\n"
+                    + "Please log in using this temporary password and change it immediately for security reasons.\n\n"
+                    + "Regards,\nYour Pharmacy Application";
 
             emailService.sendPasswordResetEmail(user.getEmail(), emailSubject, emailText);
 
@@ -216,20 +283,20 @@ public class UserService { // Or your relevant service name
     @Transactional
     public boolean changePassword(Integer userId, String currentPassword, String newPassword) {
         Optional<User> userOptional = userRepository.findById(userId);
-        
+
         if (userOptional.isPresent()) {
             User user = userOptional.get();
-            
+
             // Verify current password
             if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
                 throw new RuntimeException("Current password is incorrect");
             }
-            
+
             // Encode and set new password
             user.setPasswordHash(passwordEncoder.encode(newPassword));
             user.setUpdatedAt(LocalDateTime.now());
             userRepository.save(user);
-            
+
             log.info("Password changed successfully for user ID: {}", userId);
             return true;
         } else {
@@ -238,7 +305,7 @@ public class UserService { // Or your relevant service name
         }
     }
     // --- End Change Password Method ---
-    
+
     // Add this method to get user by phone number (if not already present)
     public User getUserByPhoneNumber(String phoneNumber) {
         return userRepository.findByPhoneNumber(phoneNumber)
@@ -249,7 +316,8 @@ public class UserService { // Or your relevant service name
     @Transactional
     public User updateUserProfile(Integer userId, UpdateUserRequest request) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with id: " + userId));
+                .orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with id: " + userId));
 
         // Update fields from request if they are provided
         if (request.getFullName() != null) {
@@ -258,7 +326,7 @@ public class UserService { // Or your relevant service name
         if (request.getEmail() != null) {
             // Add email uniqueness check
             if (userRepository.existsByEmail(request.getEmail())) {
-                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email already in use");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email already in use");
             }
             user.setEmail(request.getEmail());
         }
@@ -270,7 +338,7 @@ public class UserService { // Or your relevant service name
         }
         // Add the address update logic
         if (request.getAddress() != null) { // Check if address is provided in the request
-             user.setAddress(request.getAddress());
+            user.setAddress(request.getAddress());
         }
 
         user.setUpdatedAt(LocalDateTime.now()); // Update timestamp
@@ -279,34 +347,80 @@ public class UserService { // Or your relevant service name
     }
     // --- End Update User Profile ---
 
-
     // --- Helper Method: Map User to UserResponse DTO ---
-    // Consider making this public or moving it to a dedicated mapper class if used elsewhere
-    public UserResponse mapUserToResponse(User user) {
+    // Consider making this public or moving it to a dedicated mapper class if used
+    // elsewhere
+    private UserResponse mapToUserResponse(User user) {
         if (user == null) {
             return null;
         }
-        Set<String> roleNames = user.getRoles().stream()
-                .map(Role::getRoleName) // Use getRoleName() based on Role entity
-                .collect(Collectors.toSet());
-
-        return UserResponse.builder()
-                .id(user.getUserId())
-                .phoneNumber(user.getPhoneNumber())
-                .fullName(user.getFullName())
-                .email(user.getEmail())
-                .dateOfBirth(user.getDateOfBirth())
-                .gender(user.getGender())
-                .address(user.getAddress()) // Add mapping for address
-                .isActive(user.getIsActive())
-                .createdAt(user.getCreatedAt())
-                .updatedAt(user.getUpdatedAt())
-                .roles(roleNames)
-                // Add other fields from UserResponse DTO if necessary (e.g., lastLogin)
-                // .lastLogin(user.getLastLogin())
-                .build();
+        UserResponse response = new UserResponse();
+        response.setId(user.getUserId());
+        response.setPhoneNumber(user.getPhoneNumber());
+        response.setFullName(user.getFullName());
+        response.setEmail(user.getEmail());
+        response.setDateOfBirth(user.getDateOfBirth());
+        response.setGender(user.getGender());
+        response.setAddress(user.getAddress());
+        response.setIsActive(user.getIsActive());
+        response.setCreatedAt(user.getCreatedAt());
+        response.setUpdatedAt(user.getUpdatedAt());
+        // Verify the setter name below against your UserResponse DTO.
+        // If the field is 'lastLogin', it should be
+        // 'response.setLastLogin(user.getLastLogin());'
+        response.setLastLogin_login(user.getLastLogin());
+        if (user.getRoles() != null) {
+            response.setRoles(user.getRoles().stream()
+                    .map(Role::getRoleName)
+                    .collect(Collectors.toSet()));
+        } else {
+            response.setRoles(new HashSet<>());
+        }
+        return response;
     }
-     // --- End Helper Method ---
+    // --- End Helper Method ---
 
-    // ... getUserByPhoneNumber method ...
+    // --- Admin: Get All Users ---
+    @Transactional(readOnly = true)
+    public List<UserResponse> getAllUsers() {
+        log.info("Admin: Fetching all users");
+        return userRepository.findAll().stream()
+                .map(this::mapToUserResponse) // Changed mapUserToResponse to mapToUserResponse
+                .collect(Collectors.toList());
+    }
+
+    // --- Admin: Get User By ID ---
+    @Transactional(readOnly = true)
+    public UserResponse getUserByIdAsAdmin(Integer userId) {
+        log.info("Admin: Fetching user by ID: {}", userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with id: " + userId));
+        return mapToUserResponse(user); // Changed mapUserToResponse to mapToUserResponse
+    }
+
+
+    // --- Admin: Delete (Deactivate) User ---
+    @Transactional
+    public void deleteUserAsAdmin(Integer userId) {
+        log.info("Admin: Deactivating user with ID: {}", userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with id: " + userId));
+
+        if (!user.getIsActive()) {
+            log.warn("Admin: User with ID {} is already inactive.", userId);
+            // Optionally, throw an exception or just return
+            // throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User is already
+            // inactive.");
+            return; // Or proceed to fully delete if that's the requirement
+        }
+
+        user.setIsActive(false); // Deactivate the user
+        user.setUpdatedAt(LocalDateTime.now());
+        userRepository.save(user);
+        log.info("Admin: User deactivated successfully with ID: {}", userId);
+        // If actual deletion is required: userRepository.delete(user);
+    }
+
 }

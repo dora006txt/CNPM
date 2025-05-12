@@ -27,7 +27,6 @@ import ptithcm.edu.pharmacy.security.JwtAuthenticationFilter;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider; // Add if needed for AuthenticationProvider bean
 import org.springframework.security.core.userdetails.UserDetailsService; // Add if needed for AuthenticationProvider bean
 
-
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity // Ensure method security is enabled for @PreAuthorize
@@ -42,100 +41,112 @@ public class SecurityConfig {
     private UserDetailsService userDetailsService;
     // --- End injection ---
 
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(AbstractHttpConfigurer::disable)
-            .cors(cors -> cors.configurationSource(corsConfigurationSource())) // This line calls the method
-            .authorizeHttpRequests(auth -> auth
-                // Permit public GET access to specific resources
-                .requestMatchers(HttpMethod.GET,
-                    "/", "/index.html", "/style.css", "/script.js", // Static content
-                    "/api/auth/register", "/api/auth/forgot-password", // Auth endpoints (GET for potential pages)
-                    "/api/categories/**", // View categories
-                    "/api/products/**", // View products
-                    "/api/v1/branches", "/api/v1/branches/**", // View branches
-                    "/api/v1/inventory/branch/{branchId}/products/display", // View product list display per branch
-                    "/api/v1/inventory/branch/{branchId}/product/{productId}/display", // View single product display
-                    "/api/public/doctors", "/api/public/doctors/**", // View doctors information
-                    "/api/banners/active", // Add public banner endpoint
-                    "/api/manufacturers", "/api/manufacturers/**" // Allow public GET for manufacturers
-                    // REMOVE "/api/payment-types" from here if it exists, as it will be secured below
-                ).permitAll()
-                // Permit public POST access for authentication AND forgot password
-                .requestMatchers(HttpMethod.POST,
-                    "/api/auth/login",
-                    "/api/auth/register",
-                    "/api/auth/forgot-password" // Add this line
-                ).permitAll()
+                .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // This line calls the method
+                .authorizeHttpRequests(auth -> auth
+                        // Permit public GET access to specific resources
+                        .requestMatchers(HttpMethod.GET,
+                                "/", "/index.html", "/style.css", "/script.js", // Static content
+                                "/api/auth/register", "/api/auth/forgot-password", // Auth endpoints (GET for potential
+                                                                                   // pages)
+                                "/api/categories/**", // View categories
+                                "/api/products/**", // View products
+                                "/api/v1/branches", "/api/v1/branches/**", // View branches
+                                "/api/v1/inventory/branch/{branchId}/products/display", // View product list display per
+                                                                                        // branch
+                                "/api/v1/inventory/branch/{branchId}/product/{productId}/display", // View single
+                                                                                                   // product display
+                                "/api/public/doctors", "/api/public/doctors/**", // View doctors information
+                                "/api/banners/active", // Add public banner endpoint
+                                "/api/manufacturers", "/api/manufacturers/**", // Allow public GET for manufacturers
+                                "/api/brands", "/api/brands/**" // Allow public GET for brands
+                        // REMOVE "/api/payment-types" from here if it exists, as it will be secured
+                        // below
+                        ).permitAll()
+                        // Permit public POST access for authentication AND forgot password
+                        .requestMatchers(HttpMethod.POST,
+                                "/api/auth/login",
+                                "/api/auth/register",
+                                "/api/auth/forgot-password" // Add this line
+                        ).permitAll()
 
-                // --- Branch Management (Admin) ---
-                .requestMatchers(HttpMethod.POST, "/api/v1/branches").hasAuthority("ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/api/v1/branches/**").hasAuthority("ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/api/v1/branches/**").hasAuthority("ADMIN")
+                        // --- Branch Management (Admin) ---
+                        .requestMatchers(HttpMethod.POST, "/api/v1/branches").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/branches/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/branches/**").hasAuthority("ADMIN")
 
-                // --- Inventory Management ---
-                .requestMatchers(HttpMethod.GET,
-                    "/api/v1/inventory",
-                    "/api/v1/inventory/{id}",
-                    "/api/v1/inventory/branch/{branchId}",
-                    "/api/v1/inventory/product/{productId}",
-                    "/api/v1/inventory/branch/{branchId}/product/{productId}"
-                ).authenticated()
-                .requestMatchers(HttpMethod.POST, "/api/v1/inventory").hasAuthority("ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/api/v1/inventory/**").hasAuthority("ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/api/v1/inventory/**").hasAuthority("ADMIN")
+                        // --- Inventory Management ---
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/v1/inventory",
+                                "/api/v1/inventory/{id}",
+                                "/api/v1/inventory/branch/{branchId}",
+                                "/api/v1/inventory/product/{productId}",
+                                "/api/v1/inventory/branch/{branchId}/product/{productId}")
+                        .authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/inventory").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/inventory/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/inventory/**").hasAuthority("ADMIN")
 
-                // --- Payment Type Management ---
-                .requestMatchers(HttpMethod.GET, "/api/payment-types").authenticated()
-                .requestMatchers("/api/admin/payment-types/**").hasAuthority("ADMIN")
+                        // --- Payment Type Management ---
+                        .requestMatchers(HttpMethod.GET, "/api/payment-types").authenticated()
+                        .requestMatchers("/api/admin/payment-types/**").hasAuthority("ADMIN")
 
-                // --- Shipping Method Management (Baseline) ---
-                // @PreAuthorize in the controller will handle specific roles (ADMIN vs authenticated)
-                .requestMatchers("/api/shipping-methods/**").authenticated() // Add this line
+                        // --- Shipping Method Management (Baseline) ---
+                        // @PreAuthorize in the controller will handle specific roles (ADMIN vs
+                        // authenticated)
+                        .requestMatchers("/api/shipping-methods/**").authenticated() // Add this line
 
-                // --- Order Management (Authenticated Users) ---
-                .requestMatchers("/api/v1/orders/**").authenticated() // Restore this line
-                // .requestMatchers("/api/v1/orders/**").permitAll() // Remove or comment out the temporary line
+                        // --- Order Management (Authenticated Users) ---
+                        .requestMatchers("/api/v1/orders/**").authenticated() // Restore this line
+                        // .requestMatchers("/api/v1/orders/**").permitAll() // Remove or comment out
+                        // the temporary line
 
-                // --- Other Secured Endpoints ---
-                .requestMatchers("/api/users/me").authenticated()
-                .requestMatchers("/api/addresses/**").authenticated()
-                .requestMatchers("/api/v1/cart/**").authenticated()
+                        // --- Other Secured Endpoints ---
+                        .requestMatchers("/api/users/me").authenticated()
+                        .requestMatchers("/api/addresses/**").authenticated()
+                        .requestMatchers("/api/v1/cart/**").authenticated()
 
-                // --- Staff Management (Admin) ---
-                .requestMatchers("/api/admin/staff/**").hasAuthority("ADMIN") // Add this rule
+                        // --- Staff Management (Admin) ---
+                        .requestMatchers("/api/admin/staff/**").hasAuthority("ADMIN") // Add this rule
 
-                // --- Promotion Management (Admin) ---
-                .requestMatchers("/api/admin/promotions/**").hasAuthority("ADMIN")
+                        // --- Promotion Management (Admin) ---
+                        .requestMatchers("/api/admin/promotions/**").hasAuthority("ADMIN")
 
-                // --- Banner Management (Admin) ---
-                .requestMatchers("/api/admin/banners/**").hasAuthority("ADMIN") // Add this rule
+                        // --- Banner Management (Admin) ---
+                        .requestMatchers("/api/admin/banners/**").hasAuthority("ADMIN") // Add this rule
 
-                // --- Manufacturer Management (Admin for CUD, public for R) ---
-                .requestMatchers(HttpMethod.POST, "/api/manufacturers").hasAuthority("ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/api/manufacturers/**").hasAuthority("ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/api/manufacturers/**").hasAuthority("ADMIN")
+                        // --- Manufacturer Management (Admin for CUD, public for R) ---
+                        .requestMatchers(HttpMethod.POST, "/api/manufacturers").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/manufacturers/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/manufacturers/**").hasAuthority("ADMIN")
 
+                        // --- Brand Management (Admin for CUD, public for R already handled above) ---
+                        .requestMatchers(HttpMethod.POST, "/api/brands").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/brands/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/brands/**").hasAuthority("ADMIN")
 
-                // Secure all other requests
-                .anyRequest().authenticated()
-            )
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                        // --- User Management (Admin) ---
+                        .requestMatchers("/api/admin/users/**").hasAuthority("ADMIN") // Add this rule for admin user
+                                                                                      // management
 
+                        // Secure all other requests
+                        .anyRequest().authenticated())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
     // --- Add this Bean definition ---
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+            throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
     // --- End of Bean definition ---
-
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -148,7 +159,9 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         // Configure allowed origins (e.g., your frontend URL)
         // Use "*" for development/testing, but be more specific in production
-        configuration.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:8081", "http://localhost:5173")); // Example origins
+        configuration
+                .setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:8081", "http://localhost:5173")); // Example
+                                                                                                                        // origins
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type"));
         configuration.setAllowCredentials(true); // Allow credentials
@@ -158,7 +171,6 @@ public class SecurityConfig {
         return source;
     }
     // --- End corsConfigurationSource Bean ---
-
 
     // --- Define the AuthenticationProvider Bean ---
     @Bean

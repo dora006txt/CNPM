@@ -26,12 +26,30 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Integer> {
         @Query("SELECT od.product.id, SUM(od.quantity), SUM(od.quantity * od.priceAtPurchase) " +
                         "FROM OrderItem od JOIN od.order o " +
                         "WHERE o.orderDate BETWEEN :startDate AND :endDate " +
-                        "GROUP BY od.product " +
+                        "GROUP BY od.product.id " + // Ensure grouping by product.id
                         "ORDER BY SUM(od.quantity * od.priceAtPurchase) DESC, SUM(od.quantity) DESC")
         List<Object[]> findTopSellingProductsByDateRange(
                         @Param("startDate") LocalDateTime startDate,
                         @Param("endDate") LocalDateTime endDate,
                         Pageable pageable);
+
+    // --- New Method: Find Top Selling Product Aggregates ---
+    /**
+     * Retrieves aggregated data for top-selling products.
+     * Returns a list of Object arrays, where each array contains:
+     *  - Object[0]: Product ID (Integer)
+     *  - Object[1]: Total quantity sold (Long)
+     * The results are ordered by the total quantity sold in descending order.
+     * @param pageable Pageable object to limit the number of results.
+     * @return A list of Object[] representing top-selling product data.
+     */
+    @Query("SELECT oi.product.id, SUM(oi.quantity) as totalSold " +
+           "FROM OrderItem oi " +
+           "WHERE oi.product IS NOT NULL " +
+           "GROUP BY oi.product.id " +
+           "ORDER BY totalSold DESC")
+    List<Object[]> findTopSellingProductAggregates(Pageable pageable);
+    // --- End New Method ---
 
         // Add other custom query methods as needed
 }

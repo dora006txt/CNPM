@@ -13,9 +13,7 @@ public class OrderResponseDTO {
     private Integer orderId;
     private String orderCode;
     private Integer userId;
-    private String userFullName; // Example: Add user's name
-    private Integer branchId;
-    private String branchName; // Example: Add branch name
+    private String userFullName;
     private LocalDateTime orderDate;
     private Integer shippingMethodId;
     private String shippingMethodName; // Example: Add shipping method name

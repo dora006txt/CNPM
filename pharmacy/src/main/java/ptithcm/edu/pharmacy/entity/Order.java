@@ -17,8 +17,8 @@ import org.hibernate.annotations.UpdateTimestamp;
 // Consider replacing @Data with specific annotations to avoid potential issues
 @Getter
 @Setter
-@ToString(exclude = {"user", "branch", "shippingMethod", "orderStatus", "paymentType", "assignedStaff", "orderItems"}) // Exclude relationships from toString
-@EqualsAndHashCode(exclude = {"user", "branch", "shippingMethod", "orderStatus", "paymentType", "assignedStaff", "orderItems"}) // Exclude relationships from equals/hashCode
+@ToString(exclude = { "user", "shippingMethod", "orderStatus", "paymentType", "assignedStaff", "orderItems" }) // Exclude relationships from toString
+@EqualsAndHashCode(exclude = { "user", "shippingMethod", "orderStatus", "paymentType", "assignedStaff", "orderItems" }) // Exclude relationships from equals/hashCode
 @Entity
 @Table(name = "Orders") // Changed table name to "Orders" (plural)
 public class Order {
@@ -37,13 +37,14 @@ public class Order {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne
-    @JoinColumn(name = "branch_id", nullable = false)
-    private Branch branch;
+    // REMOVE THE BRANCH ASSOCIATION
+    // @ManyToOne
+    // @JoinColumn(name = "branch_id", nullable = false)
+    // private Branch branch;
 
     @Column(name = "order_date")
     private LocalDateTime orderDate;
-    
+
     @ManyToOne
     @JoinColumn(name = "shipping_method_id")
     private ShippingMethod shippingMethod;
@@ -61,8 +62,8 @@ public class Order {
     @Column(name = "discount_amount")
     private BigDecimal discountAmount = BigDecimal.ZERO;
 
-    @Column(name = "applied_promotion_code") 
-    private String appliedPromotionCode;     
+    @Column(name = "applied_promotion_code")
+    private String appliedPromotionCode;
 
     @Column(name = "final_amount", nullable = false)
     private BigDecimal finalAmount = BigDecimal.ZERO;

@@ -8,7 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import ptithcm.edu.pharmacy.dto.ProductRequest;
-import ptithcm.edu.pharmacy.entity.*; // Import ProductStatus
 import ptithcm.edu.pharmacy.repository.BrandRepository;
 import ptithcm.edu.pharmacy.repository.CategoryRepository;
 import ptithcm.edu.pharmacy.repository.ManufacturerRepository;
@@ -16,7 +15,14 @@ import ptithcm.edu.pharmacy.repository.ProductRepository;
 
 import java.text.Normalizer; // For slug generation
 import java.util.Locale; // For slug generation
-import java.util.regex.Pattern; // For slug generation
+import java.util.regex.Pattern;
+import java.util.Collections; // Added import
+import java.util.Map; // Added import
+import java.util.Objects; // Added import
+import java.util.stream.Collectors; // Added import
+
+import org.springframework.data.domain.PageRequest; // Added import
+import org.springframework.data.domain.Pageable; // Added import
 
 import ptithcm.edu.pharmacy.entity.Product; // Ensure Product is imported
 import ptithcm.edu.pharmacy.entity.Category;
@@ -26,6 +32,8 @@ import ptithcm.edu.pharmacy.entity.Manufacturer;
 import java.util.List; // Import List
 import java.util.Optional; // Import Optional
 
+import ptithcm.edu.pharmacy.entity.ProductStatus; // Ensure this is imported
+
 @Service
 @RequiredArgsConstructor
 public class ProductService {
@@ -34,15 +42,13 @@ public class ProductService {
     private final CategoryRepository categoryRepository;
     private final BrandRepository brandRepository;
     private final ManufacturerRepository manufacturerRepository;
-    // Removed Slugify dependency since we have our own slug generation method
-
-    // Pattern for slug generation (remove non-alphanumeric, replace space with dash)
     private static final Pattern NONLATIN = Pattern.compile("[^\\w-]");
     private static final Pattern WHITESPACE = Pattern.compile("[\\s]");
 
     // Simple slug generation utility method
     private String generateSlug(String input) {
-        if (input == null) return "";
+        if (input == null)
+            return "";
         String nowhitespace = WHITESPACE.matcher(input).replaceAll("-");
         String normalized = Normalizer.normalize(nowhitespace, Normalizer.Form.NFD);
         String slug = NONLATIN.matcher(normalized).replaceAll("");
@@ -66,19 +72,22 @@ public class ProductService {
         // Generate slug and check for uniqueness
         String slug = generateSlug(request.getName());
         if (productRepository.existsBySlugIgnoreCase(slug)) {
-             // Handle slug collision, e.g., append a number or throw an error
-             // For simplicity, we'll throw an error here. Consider a more robust strategy.
-             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Generated slug already exists. Try a slightly different name.");
+            // Handle slug collision, e.g., append a number or throw an error
+            // For simplicity, we'll throw an error here. Consider a more robust strategy.
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Generated slug already exists. Try a slightly different name.");
         }
-
 
         // Fetch related entities
         Category category = categoryRepository.findById(request.getCategoryId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found with ID: " + request.getCategoryId()));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Category not found with ID: " + request.getCategoryId()));
         Brand brand = brandRepository.findById(request.getBrandId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Brand not found with ID: " + request.getBrandId()));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Brand not found with ID: " + request.getBrandId()));
         Manufacturer manufacturer = manufacturerRepository.findById(request.getManufacturerId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Manufacturer not found with ID: " + request.getManufacturerId()));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Manufacturer not found with ID: " + request.getManufacturerId()));
 
         Product product = new Product();
         product.setName(request.getName());
@@ -95,7 +104,8 @@ public class ProductService {
         product.setImageUrl(request.getImageUrl()); // Can be null
 
         // Set defaults if not provided in request
-        product.setPrescriptionRequired(request.getIsPrescriptionRequired() != null ? request.getIsPrescriptionRequired() : false);
+        product.setPrescriptionRequired(
+                request.getIsPrescriptionRequired() != null ? request.getIsPrescriptionRequired() : false);
         product.setStatus(request.getStatus() != null ? request.getStatus() : ProductStatus.ACTIVE);
 
         // Set relationships
@@ -117,7 +127,8 @@ public class ProductService {
     public Product updateProduct(Integer id, ProductRequest request) {
         // 1. Find the existing product
         Product existingProduct = productRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found with id: " + id));
+                .orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found with id: " + id));
 
         // 2. Validate Name uniqueness (if changed)
         if (!existingProduct.getName().equalsIgnoreCase(request.getName())) {
@@ -129,10 +140,12 @@ public class ProductService {
             existingProduct.setName(request.getName());
             // Regenerate slug if name changes
             String newSlug = generateSlug(request.getName());
-             // Check slug uniqueness (excluding self)
-            if (productRepository.existsBySlugIgnoreCase(newSlug) && !existingProduct.getSlug().equalsIgnoreCase(newSlug)) {
-                 // Handle slug collision
-                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Generated slug from new name already exists.");
+            // Check slug uniqueness (excluding self)
+            if (productRepository.existsBySlugIgnoreCase(newSlug)
+                    && !existingProduct.getSlug().equalsIgnoreCase(newSlug)) {
+                // Handle slug collision
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Generated slug from new name already exists.");
             }
             existingProduct.setSlug(newSlug);
         }
@@ -144,7 +157,7 @@ public class ProductService {
         if (requestedSku != null && !requestedSku.isEmpty() && !requestedSku.equalsIgnoreCase(existingSku)) {
             productRepository.findBySkuIgnoreCase(requestedSku).ifPresent(p -> {
                 if (!p.getId().equals(id)) { // Ensure it's not the same product
-                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product SKU already exists");
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product SKU already exists");
                 }
             });
             existingProduct.setSku(requestedSku);
@@ -152,21 +165,23 @@ public class ProductService {
             existingProduct.setSku(null); // Allow setting SKU to null/empty
         }
 
-
         // 4. Fetch and update related entities if IDs changed
         if (!existingProduct.getCategory().getCategoryId().equals(request.getCategoryId())) {
             Category category = categoryRepository.findById(request.getCategoryId())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found with ID: " + request.getCategoryId()));
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                            "Category not found with ID: " + request.getCategoryId()));
             existingProduct.setCategory(category);
         }
         if (!existingProduct.getBrand().getId().equals(request.getBrandId())) {
             Brand brand = brandRepository.findById(request.getBrandId())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Brand not found with ID: " + request.getBrandId()));
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                            "Brand not found with ID: " + request.getBrandId()));
             existingProduct.setBrand(brand);
         }
         if (!existingProduct.getManufacturer().getId().equals(request.getManufacturerId())) {
             Manufacturer manufacturer = manufacturerRepository.findById(request.getManufacturerId())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Manufacturer not found with ID: " + request.getManufacturerId()));
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                            "Manufacturer not found with ID: " + request.getManufacturerId()));
             existingProduct.setManufacturer(manufacturer);
         }
 
@@ -180,17 +195,19 @@ public class ProductService {
         existingProduct.setPackaging(request.getPackaging());
         existingProduct.setUnit(request.getUnit());
         existingProduct.setImageUrl(request.getImageUrl());
-        existingProduct.setPrescriptionRequired(request.getIsPrescriptionRequired() != null ? request.getIsPrescriptionRequired() : existingProduct.isPrescriptionRequired());
+        existingProduct.setPrescriptionRequired(
+                request.getIsPrescriptionRequired() != null ? request.getIsPrescriptionRequired()
+                        : existingProduct.isPrescriptionRequired());
         existingProduct.setStatus(request.getStatus() != null ? request.getStatus() : existingProduct.getStatus());
 
-        // AverageRating and ReviewCount are typically updated via other processes (e.g., reviews)
+        // AverageRating and ReviewCount are typically updated via other processes
+        // (e.g., reviews)
         // Timestamps are handled by @UpdateTimestamp
 
         // 6. Save the updated product
         return productRepository.save(existingProduct);
     }
     // --- End Update Product ---
-
 
     // --- New Method: Delete Product ---
     @Transactional
@@ -202,24 +219,55 @@ public class ProductService {
     }
     // --- End Delete Product ---
 
-
     // --- Existing Method: Find Product by ID ---
     @Transactional(readOnly = true) // Use readOnly for query operations
     public Optional<Product> findProductById(Integer id) {
-        // Fetch the product and potentially initialize related entities if needed later for mapping
+        // Fetch the product and potentially initialize related entities if needed later
+        // for mapping
         // findById already returns Optional<Product>
         return productRepository.findById(id);
         // Note: If mapping required initializing lazy fields *within* the service,
-        // you might need to explicitly access them here, e.g., product.getManufacturer().getName()
+        // you might need to explicitly access them here, e.g.,
+        // product.getManufacturer().getName()
         // But since mapping happens in the controller, returning the Optional is fine.
     }
 
     // --- Existing Method: Find All Products ---
     @Transactional(readOnly = true) // Use readOnly for query operations
     public List<Product> findAllProducts() {
-        // Fetch all products. Lazy relationships will be handled during mapping in the controller.
+        // Fetch all products. Lazy relationships will be handled during mapping in the
+        // controller.
         return productRepository.findAll();
     }
 
-    // Optional: Add methods for getting, updating, deleting products later
-} // End class
+    // Existing method for top selling products (ensure it's suitable or adjust as
+    // needed)
+    @Transactional(readOnly = true)
+    public List<Product> getTopSellingProducts(int limit) {
+        Pageable pageable = PageRequest.of(0, limit);
+        // Corrected to use productRepository
+        List<Object[]> results = productRepository.findTopSellingProductIdsAndQuantities(pageable);
+
+        if (results.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<Integer> productIds = results.stream()
+                .map(result -> (Integer) result[0])
+                .collect(Collectors.toList());
+
+        List<Product> products = productRepository.findAllById(productIds);
+
+        // To maintain the order of best-selling, we need to re-order `products` based
+        // on `productIds`
+        Map<Integer, Product> productMap = products.stream()
+                .collect(Collectors.toMap(Product::getId, product -> product));
+
+        return productIds.stream()
+                .map(productMap::get)
+                .filter(Objects::nonNull) // Filter out any nulls if a product ID wasn't found (should not happen
+                                          // ideally)
+                .collect(Collectors.toList());
+    }
+
+}

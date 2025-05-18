@@ -3,10 +3,13 @@ package ptithcm.edu.pharmacy.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-// --- Add logging imports ---
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-// --- End logging imports ---
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,21 +23,12 @@ import ptithcm.edu.pharmacy.dto.CategoryResponse;
 import ptithcm.edu.pharmacy.dto.BrandResponse;
 import ptithcm.edu.pharmacy.dto.ManufacturerResponse;
 import ptithcm.edu.pharmacy.dto.CountryResponse;
-// Remove unused Entity/DTO imports if mapping is fully in service
-// import ptithcm.edu.pharmacy.entity.Product;
-import ptithcm.edu.pharmacy.entity.Category;
 import ptithcm.edu.pharmacy.entity.Brand;
+import ptithcm.edu.pharmacy.entity.Category;
+import ptithcm.edu.pharmacy.entity.Country;
 import ptithcm.edu.pharmacy.entity.Manufacturer;
 import ptithcm.edu.pharmacy.entity.Product;
-import ptithcm.edu.pharmacy.entity.Country;
 import ptithcm.edu.pharmacy.service.ProductService;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-// Remove unused stream/Collectors if not used here anymore
-// import java.util.stream.Collectors;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/products")
@@ -42,9 +36,7 @@ import java.util.stream.Collectors;
 public class ProductController {
 
     private final ProductService productService;
-    // --- Add Logger instance ---
     private static final Logger log = LoggerFactory.getLogger(ProductController.class);
-    // --- End Logger instance ---
 
     @PostMapping
     public ResponseEntity<ProductResponse> createProduct(@Valid @RequestBody ProductRequest productRequest) {
@@ -83,7 +75,8 @@ public class ProductController {
 
     // --- New Endpoint: Update Product ---
     @PutMapping("/{id}")
-    public ResponseEntity<ProductResponse> updateProduct(@PathVariable Integer id, @Valid @RequestBody ProductRequest productRequest) {
+    public ResponseEntity<ProductResponse> updateProduct(@PathVariable Integer id,
+            @Valid @RequestBody ProductRequest productRequest) {
         log.info("Received request to update product with ID: {}", id);
         Product updatedProduct = productService.updateProduct(id, productRequest);
         ProductResponse responseDto = mapProductToResponseDto(updatedProduct);
@@ -102,14 +95,20 @@ public class ProductController {
     }
     // --- End Delete Product ---
 
+    // --- New Endpoint: Get Products for Home Page (Featured, Best Selling, Newest) ---
+    // Removed getHomePageProducts() method and @GetMapping("/home")
+    // --- End Home Page Products ---
 
     // --- Helper mapping functions ---
     private ProductResponse mapProductToResponseDto(Product product) {
         // Ensure related entities are not null before mapping
-        ManufacturerResponse manufacturerDto = product.getManufacturer() != null ? mapManufacturerToResponseDto(product.getManufacturer()) : null;
-        CategoryResponse categoryDto = product.getCategory() != null ? mapCategoryToResponseDto(product.getCategory()) : null;
+        ManufacturerResponse manufacturerDto = product.getManufacturer() != null
+                ? mapManufacturerToResponseDto(product.getManufacturer())
+                : null;
+        CategoryResponse categoryDto = product.getCategory() != null ? mapCategoryToResponseDto(product.getCategory())
+                : null;
         BrandResponse brandDto = product.getBrand() != null ? mapBrandToResponseDto(product.getBrand()) : null;
-    
+
         return ProductResponse.builder()
                 .id(product.getId())
                 .name(product.getName())
@@ -139,7 +138,8 @@ public class ProductController {
     }
 
     private CategoryResponse mapCategoryToResponseDto(Category category) {
-        if (category == null) return null;
+        if (category == null)
+            return null;
         return CategoryResponse.builder()
                 .id(category.getCategoryId())
                 .name(category.getName())
@@ -147,8 +147,9 @@ public class ProductController {
                 .build();
     }
 
-     private BrandResponse mapBrandToResponseDto(Brand brand) {
-        if (brand == null) return null;
+    private BrandResponse mapBrandToResponseDto(Brand brand) {
+        if (brand == null)
+            return null;
         return BrandResponse.builder()
                 .id(brand.getId())
                 .name(brand.getName())
@@ -156,9 +157,12 @@ public class ProductController {
                 .build();
     }
 
-     private ManufacturerResponse mapManufacturerToResponseDto(Manufacturer manufacturer) {
-        if (manufacturer == null) return null;
-        CountryResponse countryDto = manufacturer.getCountry() != null ? mapCountryToResponseDto(manufacturer.getCountry()) : null;
+    private ManufacturerResponse mapManufacturerToResponseDto(Manufacturer manufacturer) {
+        if (manufacturer == null)
+            return null;
+        CountryResponse countryDto = manufacturer.getCountry() != null
+                ? mapCountryToResponseDto(manufacturer.getCountry())
+                : null;
         return ManufacturerResponse.builder()
                 .id(manufacturer.getId())
                 .name(manufacturer.getName())
@@ -167,8 +171,9 @@ public class ProductController {
                 .build();
     }
 
-     private CountryResponse mapCountryToResponseDto(Country country) {
-        if (country == null) return null;
+    private CountryResponse mapCountryToResponseDto(Country country) {
+        if (country == null)
+            return null;
         return CountryResponse.builder()
                 .id(country.getCountryId())
                 .countryCode(country.getCountryCode())
@@ -176,7 +181,6 @@ public class ProductController {
                 .build();
     }
     // --- End Helper mapping functions ---
-
 
     // --- Exception Handlers ---
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -202,16 +206,26 @@ public class ProductController {
         return new ResponseEntity<>(error, ex.getStatusCode());
     }
 
-
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleGenericException(Exception ex) {
         log.error("An unexpected error occurred: ", ex);
         Map<String, String> error = new HashMap<>();
         error.put("message", "An internal server error occurred. Please try again later.");
-        // Optionally include ex.getMessage() in non-production environments for easier debugging
+        // Optionally include ex.getMessage() in non-production environments for easier
+        // debugging
         // error.put("details", ex.getMessage());
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    // --- End Exception Handlers ---
 
-} // End class
+    // --- Endpoint: Get Best-Selling Products ---
+    @GetMapping("/best-selling")
+    public ResponseEntity<List<ProductResponse>> getBestSellingProducts( // <--- CHANGED ProductResponseDTO to
+                                                                         // ProductResponse
+            @RequestParam(defaultValue = "10") int limit) {
+        List<Product> products = productService.getTopSellingProducts(limit);
+        List<ProductResponse> dtos = products.stream()
+                .map(this::mapProductToResponseDto) // <--- CHANGED to use mapProductToResponseDto
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
+    }
+}

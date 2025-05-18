@@ -13,10 +13,7 @@ import java.util.List;
 public class ShoppingCartDTO {
     private Integer cartId;
     private Integer userId;
-    private Integer branchId; // Keep branch ID
-    private String branchName; // Add branch name for display
     private List<ShoppingCartItemDTO> items;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    // private Double totalPrice; // Optional: if calculated on backend
 }

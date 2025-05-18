@@ -20,4 +20,6 @@ public class ShoppingCartItemDTO {
     private String productImageUrl; // Add image URL
     private String unit; // Add unit for display (e.g., 'box', 'bottle')
     private LocalDateTime addedAt;
+    private Integer branchId;
+    private String branchName;
 }

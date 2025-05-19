@@ -1,4 +1,4 @@
-package ptithcm.edu.pharmacy.config; // Adjust package name if needed
+package ptithcm.edu.pharmacy.config;
 
 import java.util.List;
 
@@ -13,6 +13,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,8 +30,8 @@ import org.springframework.security.core.userdetails.UserDetailsService; // Add 
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity // Ensure method security is enabled for @PreAuthorize
-@RequiredArgsConstructor // If using Lombok
+@EnableMethodSecurity // Đảm bảo đã có
+@RequiredArgsConstructor
 public class SecurityConfig {
 
     @Autowired
@@ -60,6 +61,7 @@ public class SecurityConfig {
                                 "/api/banners/active",
                                 "/api/manufacturers", "/api/manufacturers/**",
                                 "/api/brands", "/api/brands/**"
+                                // Remove "/ws/**" from here
                         ).permitAll()
                         // Permit public POST access for authentication AND forgot password
                         .requestMatchers(HttpMethod.POST,
@@ -67,6 +69,8 @@ public class SecurityConfig {
                                 "/api/auth/register",
                                 "/api/auth/forgot-password"
                         ).permitAll()
+                        // Add a new rule specifically for /ws/** to permit all methods
+                        .requestMatchers("/ws/**").permitAll()
 
                         // --- Branch Management (Admin) ---
                         .requestMatchers(HttpMethod.POST, "/api/v1/branches").hasAuthority("ADMIN")
@@ -93,7 +97,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/shipping-methods/**").authenticated()
 
                         // --- Order Management (Authenticated Users) ---
-                        .requestMatchers("/api/v1/orders/**").authenticated()
+                        .requestMatchers("/api/v1/orders", "/api/v1/orders/**").authenticated() // User's own orders
+                        
+                        // --- NEW: Order Management (Admin) ---
+                        .requestMatchers("/api/v1/orders/admin/**").hasAuthority("ADMIN") // Secure admin order endpoints
 
                         // --- Other Secured Endpoints ---
                         .requestMatchers("/api/users/me").authenticated()

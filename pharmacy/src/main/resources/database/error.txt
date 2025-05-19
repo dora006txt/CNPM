@@ -1,183 +1,644 @@
-2025-05-18T17:44:12.441+07:00  WARN 58832 --- [pharmacy] [nio-8080-exec-5] o.h.engine.jdbc.spi.SqlExceptionHelper   : SQL Error: 1364, SQLState: HY000
-2025-05-18T17:44:12.441+07:00 ERROR 58832 --- [pharmacy] [nio-8080-exec-5] o.h.engine.jdbc.spi.SqlExceptionHelper   : Field 'branch_id' doesn't have a default value
-2025-05-18T17:44:12.445+07:00 ERROR 58832 --- [pharmacy] [nio-8080-exec-5] o.a.c.c.C.[.[.[/].[dispatcherServlet]    : Servlet.service() for servlet [dispatcherServlet] in context with path [] threw exception [Request processing failed: org.springframework.orm.jpa.JpaSystemException: could not execute statement [Field 'branch_id' doesn't have a default value] [insert into Orders (applied_promotion_code,assigned_staff_id,cancelled_at,consultation_status,created_at,discount_amount,final_amount,notes,order_code,order_date,order_status_id,payment_status,payment_type_id,requires_consultation,shipping_address,shipping_fee,shipping_method_id,subtotal_amount,updated_at,user_id) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)]] with root cause
+2025-05-19T13:38:09.207+07:00  INFO 11874 --- [pharmacy] [nio-8080-exec-5] p.edu.pharmacy.config.WebSocketConfig    : STOMP Command: SEND
+2025-05-19T13:38:09.208+07:00  INFO 11874 --- [pharmacy] [nio-8080-exec-5] p.edu.pharmacy.config.WebSocketConfig    : STOMP Headers: {destination=[/app/chat.sendMessage/1], content-type=[application/json]}
+2025-05-19T13:38:09.210+07:00 DEBUG 11874 --- [pharmacy] [boundChannel-10] .WebSocketAnnotationMethodMessageHandler : Searching methods to handle SEND /app/chat.sendMessage/1 session=365be287-9c14-bce0-1bbb-af4b8e702364 application/json payload={"content":"Xin chào từ Postman, đã xác thực!"}
+, lookupDestination='/chat.sendMessage/1'
+2025-05-19T13:38:09.210+07:00 DEBUG 11874 --- [pharmacy] [boundChannel-10] .WebSocketAnnotationMethodMessageHandler : Invoking ChatController#sendMessage[3 args]
+2025-05-19T13:38:09.215+07:00  INFO 11874 --- [pharmacy] [boundChannel-10] p.e.pharmacy.controller.ChatController   : sendMessage: Authenticated user principal name: 0987351477
+2025-05-19T13:38:09.227+07:00 DEBUG 11874 --- [pharmacy] [boundChannel-10] org.hibernate.SQL                        : 
+    select
+        u1_0.user_id,
+        u1_0.address,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.email,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.is_active,
+        u1_0.last_login,
+        u1_0.password_hash,
+        u1_0.phone_number,
+        u1_0.updated_at 
+    from
+        Users u1_0 
+    where
+        u1_0.phone_number=?
+Hibernate: 
+    select
+        u1_0.user_id,
+        u1_0.address,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.email,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.is_active,
+        u1_0.last_login,
+        u1_0.password_hash,
+        u1_0.phone_number,
+        u1_0.updated_at 
+    from
+        Users u1_0 
+    where
+        u1_0.phone_number=?
+2025-05-19T13:38:09.250+07:00 DEBUG 11874 --- [pharmacy] [boundChannel-10] org.hibernate.SQL                        : 
+    select
+        cr1_0.request_id,
+        as1_0.staff_id,
+        as1_0.branch_id,
+        b1_0.branch_id,
+        b1_0.address,
+        b1_0.created_at,
+        b1_0.is_active,
+        b1_0.latitude,
+        b1_0.longitude,
+        b1_0.name,
+        b1_0.operating_hours,
+        b1_0.phone_number,
+        b1_0.updated_at,
+        as1_0.created_at,
+        as1_0.full_name,
+        as1_0.is_active,
+        as1_0.is_available_for_consultation,
+        as1_0.profile_image_url,
+        as1_0.specialty,
+        as1_0.title,
+        as1_0.updated_at,
+        u1_0.user_id,
+        u1_0.address,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.email,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.is_active,
+        u1_0.last_login,
+        u1_0.password_hash,
+        u1_0.phone_number,
+        u1_0.updated_at,
+        as1_0.workplace_info,
+        b2_0.branch_id,
+        b2_0.address,
+        b2_0.created_at,
+        b2_0.is_active,
+        b2_0.latitude,
+        b2_0.longitude,
+        b2_0.name,
+        b2_0.operating_hours,
+        b2_0.phone_number,
+        b2_0.updated_at,
+        cr1_0.last_updated,
+        cr1_0.request_time,
+        cr1_0.request_type,
+        s1_0.staff_id,
+        s1_0.branch_id,
+        b3_0.branch_id,
+        b3_0.address,
+        b3_0.created_at,
+        b3_0.is_active,
+        b3_0.latitude,
+        b3_0.longitude,
+        b3_0.name,
+        b3_0.operating_hours,
+        b3_0.phone_number,
+        b3_0.updated_at,
+        s1_0.created_at,
+        s1_0.full_name,
+        s1_0.is_active,
+        s1_0.is_available_for_consultation,
+        s1_0.profile_image_url,
+        s1_0.specialty,
+        s1_0.title,
+        s1_0.updated_at,
+        u2_0.user_id,
+        u2_0.address,
+        u2_0.created_at,
+        u2_0.date_of_birth,
+        u2_0.email,
+        u2_0.full_name,
+        u2_0.gender,
+        u2_0.is_active,
+        u2_0.last_login,
+        u2_0.password_hash,
+        u2_0.phone_number,
+        u2_0.updated_at,
+        s1_0.workplace_info,
+        cr1_0.status,
+        cr1_0.user_id,
+        u3_0.user_id,
+        u3_0.address,
+        u3_0.created_at,
+        u3_0.date_of_birth,
+        u3_0.email,
+        u3_0.full_name,
+        u3_0.gender,
+        u3_0.is_active,
+        u3_0.last_login,
+        u3_0.password_hash,
+        u3_0.phone_number,
+        u3_0.updated_at,
+        cr1_0.user_message 
+    from
+        Consultation_Requests cr1_0 
+    left join
+        Staff as1_0 
+            on as1_0.staff_id=cr1_0.assigned_staff_id 
+    left join
+        Branches b1_0 
+            on b1_0.branch_id=as1_0.branch_id 
+    left join
+        Users u1_0 
+            on u1_0.user_id=as1_0.user_id 
+    left join
+        Branches b2_0 
+            on b2_0.branch_id=cr1_0.branch_id 
+    left join
+        Staff s1_0 
+            on s1_0.staff_id=cr1_0.staff_id 
+    left join
+        Branches b3_0 
+            on b3_0.branch_id=s1_0.branch_id 
+    left join
+        Users u2_0 
+            on u2_0.user_id=s1_0.user_id 
+    join
+        Users u3_0 
+            on u3_0.user_id=cr1_0.user_id 
+    where
+        cr1_0.request_id=?
+Hibernate: 
+    select
+        cr1_0.request_id,
+        as1_0.staff_id,
+        as1_0.branch_id,
+        b1_0.branch_id,
+        b1_0.address,
+        b1_0.created_at,
+        b1_0.is_active,
+        b1_0.latitude,
+        b1_0.longitude,
+        b1_0.name,
+        b1_0.operating_hours,
+        b1_0.phone_number,
+        b1_0.updated_at,
+        as1_0.created_at,
+        as1_0.full_name,
+        as1_0.is_active,
+        as1_0.is_available_for_consultation,
+        as1_0.profile_image_url,
+        as1_0.specialty,
+        as1_0.title,
+        as1_0.updated_at,
+        u1_0.user_id,
+        u1_0.address,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.email,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.is_active,
+        u1_0.last_login,
+        u1_0.password_hash,
+        u1_0.phone_number,
+        u1_0.updated_at,
+        as1_0.workplace_info,
+        b2_0.branch_id,
+        b2_0.address,
+        b2_0.created_at,
+        b2_0.is_active,
+        b2_0.latitude,
+        b2_0.longitude,
+        b2_0.name,
+        b2_0.operating_hours,
+        b2_0.phone_number,
+        b2_0.updated_at,
+        cr1_0.last_updated,
+        cr1_0.request_time,
+        cr1_0.request_type,
+        s1_0.staff_id,
+        s1_0.branch_id,
+        b3_0.branch_id,
+        b3_0.address,
+        b3_0.created_at,
+        b3_0.is_active,
+        b3_0.latitude,
+        b3_0.longitude,
+        b3_0.name,
+        b3_0.operating_hours,
+        b3_0.phone_number,
+        b3_0.updated_at,
+        s1_0.created_at,
+        s1_0.full_name,
+        s1_0.is_active,
+        s1_0.is_available_for_consultation,
+        s1_0.profile_image_url,
+        s1_0.specialty,
+        s1_0.title,
+        s1_0.updated_at,
+        u2_0.user_id,
+        u2_0.address,
+        u2_0.created_at,
+        u2_0.date_of_birth,
+        u2_0.email,
+        u2_0.full_name,
+        u2_0.gender,
+        u2_0.is_active,
+        u2_0.last_login,
+        u2_0.password_hash,
+        u2_0.phone_number,
+        u2_0.updated_at,
+        s1_0.workplace_info,
+        cr1_0.status,
+        cr1_0.user_id,
+        u3_0.user_id,
+        u3_0.address,
+        u3_0.created_at,
+        u3_0.date_of_birth,
+        u3_0.email,
+        u3_0.full_name,
+        u3_0.gender,
+        u3_0.is_active,
+        u3_0.last_login,
+        u3_0.password_hash,
+        u3_0.phone_number,
+        u3_0.updated_at,
+        cr1_0.user_message 
+    from
+        Consultation_Requests cr1_0 
+    left join
+        Staff as1_0 
+            on as1_0.staff_id=cr1_0.assigned_staff_id 
+    left join
+        Branches b1_0 
+            on b1_0.branch_id=as1_0.branch_id 
+    left join
+        Users u1_0 
+            on u1_0.user_id=as1_0.user_id 
+    left join
+        Branches b2_0 
+            on b2_0.branch_id=cr1_0.branch_id 
+    left join
+        Staff s1_0 
+            on s1_0.staff_id=cr1_0.staff_id 
+    left join
+        Branches b3_0 
+            on b3_0.branch_id=s1_0.branch_id 
+    left join
+        Users u2_0 
+            on u2_0.user_id=s1_0.user_id 
+    join
+        Users u3_0 
+            on u3_0.user_id=cr1_0.user_id 
+    where
+        cr1_0.request_id=?
+2025-05-19T13:38:09.256+07:00  INFO 11874 --- [pharmacy] [boundChannel-10] p.e.pharmacy.controller.ChatController   : sendMessage: Processing message for ConsultationRequest ID: 1, Sender ID: 3
+2025-05-19T13:38:09.256+07:00  INFO 11874 --- [pharmacy] [boundChannel-10] p.e.pharmacy.controller.ChatController   : sendMessage: Sender (ID: 3) is the consultation request user.
+2025-05-19T13:38:09.256+07:00  INFO 11874 --- [pharmacy] [boundChannel-10] p.e.pharmacy.controller.ChatController   : sendMessage: Receiver determined as assigned staff (User ID: 18).
+2025-05-19T13:38:09.258+07:00 DEBUG 11874 --- [pharmacy] [boundChannel-10] org.hibernate.SQL                        : 
+    select
+        cr1_0.request_id,
+        as1_0.staff_id,
+        as1_0.branch_id,
+        b1_0.branch_id,
+        b1_0.address,
+        b1_0.created_at,
+        b1_0.is_active,
+        b1_0.latitude,
+        b1_0.longitude,
+        b1_0.name,
+        b1_0.operating_hours,
+        b1_0.phone_number,
+        b1_0.updated_at,
+        as1_0.created_at,
+        as1_0.full_name,
+        as1_0.is_active,
+        as1_0.is_available_for_consultation,
+        as1_0.profile_image_url,
+        as1_0.specialty,
+        as1_0.title,
+        as1_0.updated_at,
+        u1_0.user_id,
+        u1_0.address,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.email,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.is_active,
+        u1_0.last_login,
+        u1_0.password_hash,
+        u1_0.phone_number,
+        u1_0.updated_at,
+        as1_0.workplace_info,
+        b2_0.branch_id,
+        b2_0.address,
+        b2_0.created_at,
+        b2_0.is_active,
+        b2_0.latitude,
+        b2_0.longitude,
+        b2_0.name,
+        b2_0.operating_hours,
+        b2_0.phone_number,
+        b2_0.updated_at,
+        cr1_0.last_updated,
+        cr1_0.request_time,
+        cr1_0.request_type,
+        s1_0.staff_id,
+        s1_0.branch_id,
+        b3_0.branch_id,
+        b3_0.address,
+        b3_0.created_at,
+        b3_0.is_active,
+        b3_0.latitude,
+        b3_0.longitude,
+        b3_0.name,
+        b3_0.operating_hours,
+        b3_0.phone_number,
+        b3_0.updated_at,
+        s1_0.created_at,
+        s1_0.full_name,
+        s1_0.is_active,
+        s1_0.is_available_for_consultation,
+        s1_0.profile_image_url,
+        s1_0.specialty,
+        s1_0.title,
+        s1_0.updated_at,
+        u2_0.user_id,
+        u2_0.address,
+        u2_0.created_at,
+        u2_0.date_of_birth,
+        u2_0.email,
+        u2_0.full_name,
+        u2_0.gender,
+        u2_0.is_active,
+        u2_0.last_login,
+        u2_0.password_hash,
+        u2_0.phone_number,
+        u2_0.updated_at,
+        s1_0.workplace_info,
+        cr1_0.status,
+        cr1_0.user_id,
+        u3_0.user_id,
+        u3_0.address,
+        u3_0.created_at,
+        u3_0.date_of_birth,
+        u3_0.email,
+        u3_0.full_name,
+        u3_0.gender,
+        u3_0.is_active,
+        u3_0.last_login,
+        u3_0.password_hash,
+        u3_0.phone_number,
+        u3_0.updated_at,
+        cr1_0.user_message 
+    from
+        Consultation_Requests cr1_0 
+    left join
+        Staff as1_0 
+            on as1_0.staff_id=cr1_0.assigned_staff_id 
+    left join
+        Branches b1_0 
+            on b1_0.branch_id=as1_0.branch_id 
+    left join
+        Users u1_0 
+            on u1_0.user_id=as1_0.user_id 
+    left join
+        Branches b2_0 
+            on b2_0.branch_id=cr1_0.branch_id 
+    left join
+        Staff s1_0 
+            on s1_0.staff_id=cr1_0.staff_id 
+    left join
+        Branches b3_0 
+            on b3_0.branch_id=s1_0.branch_id 
+    left join
+        Users u2_0 
+            on u2_0.user_id=s1_0.user_id 
+    join
+        Users u3_0 
+            on u3_0.user_id=cr1_0.user_id 
+    where
+        cr1_0.request_id=?
+Hibernate: 
+    select
+        cr1_0.request_id,
+        as1_0.staff_id,
+        as1_0.branch_id,
+        b1_0.branch_id,
+        b1_0.address,
+        b1_0.created_at,
+        b1_0.is_active,
+        b1_0.latitude,
+        b1_0.longitude,
+        b1_0.name,
+        b1_0.operating_hours,
+        b1_0.phone_number,
+        b1_0.updated_at,
+        as1_0.created_at,
+        as1_0.full_name,
+        as1_0.is_active,
+        as1_0.is_available_for_consultation,
+        as1_0.profile_image_url,
+        as1_0.specialty,
+        as1_0.title,
+        as1_0.updated_at,
+        u1_0.user_id,
+        u1_0.address,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.email,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.is_active,
+        u1_0.last_login,
+        u1_0.password_hash,
+        u1_0.phone_number,
+        u1_0.updated_at,
+        as1_0.workplace_info,
+        b2_0.branch_id,
+        b2_0.address,
+        b2_0.created_at,
+        b2_0.is_active,
+        b2_0.latitude,
+        b2_0.longitude,
+        b2_0.name,
+        b2_0.operating_hours,
+        b2_0.phone_number,
+        b2_0.updated_at,
+        cr1_0.last_updated,
+        cr1_0.request_time,
+        cr1_0.request_type,
+        s1_0.staff_id,
+        s1_0.branch_id,
+        b3_0.branch_id,
+        b3_0.address,
+        b3_0.created_at,
+        b3_0.is_active,
+        b3_0.latitude,
+        b3_0.longitude,
+        b3_0.name,
+        b3_0.operating_hours,
+        b3_0.phone_number,
+        b3_0.updated_at,
+        s1_0.created_at,
+        s1_0.full_name,
+        s1_0.is_active,
+        s1_0.is_available_for_consultation,
+        s1_0.profile_image_url,
+        s1_0.specialty,
+        s1_0.title,
+        s1_0.updated_at,
+        u2_0.user_id,
+        u2_0.address,
+        u2_0.created_at,
+        u2_0.date_of_birth,
+        u2_0.email,
+        u2_0.full_name,
+        u2_0.gender,
+        u2_0.is_active,
+        u2_0.last_login,
+        u2_0.password_hash,
+        u2_0.phone_number,
+        u2_0.updated_at,
+        s1_0.workplace_info,
+        cr1_0.status,
+        cr1_0.user_id,
+        u3_0.user_id,
+        u3_0.address,
+        u3_0.created_at,
+        u3_0.date_of_birth,
+        u3_0.email,
+        u3_0.full_name,
+        u3_0.gender,
+        u3_0.is_active,
+        u3_0.last_login,
+        u3_0.password_hash,
+        u3_0.phone_number,
+        u3_0.updated_at,
+        cr1_0.user_message 
+    from
+        Consultation_Requests cr1_0 
+    left join
+        Staff as1_0 
+            on as1_0.staff_id=cr1_0.assigned_staff_id 
+    left join
+        Branches b1_0 
+            on b1_0.branch_id=as1_0.branch_id 
+    left join
+        Users u1_0 
+            on u1_0.user_id=as1_0.user_id 
+    left join
+        Branches b2_0 
+            on b2_0.branch_id=cr1_0.branch_id 
+    left join
+        Staff s1_0 
+            on s1_0.staff_id=cr1_0.staff_id 
+    left join
+        Branches b3_0 
+            on b3_0.branch_id=s1_0.branch_id 
+    left join
+        Users u2_0 
+            on u2_0.user_id=s1_0.user_id 
+    join
+        Users u3_0 
+            on u3_0.user_id=cr1_0.user_id 
+    where
+        cr1_0.request_id=?
+2025-05-19T13:38:09.277+07:00 DEBUG 11874 --- [pharmacy] [boundChannel-10] org.hibernate.SQL                        : 
+    update
+        Consultation_Requests 
+    set
+        assigned_staff_id=?,
+        branch_id=?,
+        last_updated=?,
+        request_time=?,
+        request_type=?,
+        staff_id=?,
+        status=?,
+        user_id=?,
+        user_message=? 
+    where
+        request_id=?
+Hibernate: 
+    update
+        Consultation_Requests 
+    set
+        assigned_staff_id=?,
+        branch_id=?,
+        last_updated=?,
+        request_time=?,
+        request_type=?,
+        staff_id=?,
+        status=?,
+        user_id=?,
+        user_message=? 
+    where
+        request_id=?
+2025-05-19T13:38:09.287+07:00 DEBUG 11874 --- [pharmacy] [boundChannel-10] org.hibernate.SQL                        : 
+    insert 
+    into
+        Messages
+        (consultation_request_id, content, order_id, read_at, receiver_user_id, sender_user_id, sent_at) 
+    values
+        (?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        Messages
+        (consultation_request_id, content, order_id, read_at, receiver_user_id, sender_user_id, sent_at) 
+    values
+        (?, ?, ?, ?, ?, ?, ?)
+2025-05-19T13:38:09.292+07:00  INFO 11874 --- [pharmacy] [boundChannel-10] p.e.pharmacy.controller.ChatController   : sendMessage: Message saved with ID: 2
+2025-05-19T13:38:09.292+07:00  INFO 11874 --- [pharmacy] [boundChannel-10] p.e.pharmacy.controller.ChatController   : sendMessage: Sending message to topic: /topic/consultation/1
+2025-05-19T13:38:09.293+07:00 DEBUG 11874 --- [pharmacy] [boundChannel-10] .WebSocketAnnotationMethodMessageHandler : Searching methods to handle MessageConversionException
+2025-05-19T13:38:09.293+07:00 ERROR 11874 --- [pharmacy] [boundChannel-10] .WebSocketAnnotationMethodMessageHandler : Unhandled exception from message handler method
 
-java.sql.SQLException: Field 'branch_id' doesn't have a default value
-        at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:121) ~[mysql-connector-j-9.1.0.jar:9.1.0]
-        at com.mysql.cj.jdbc.exceptions.SQLExceptionsMapping.translateException(SQLExceptionsMapping.java:114) ~[mysql-connector-j-9.1.0.jar:9.1.0]
-        at com.mysql.cj.jdbc.ClientPreparedStatement.executeInternal(ClientPreparedStatement.java:988) ~[mysql-connector-j-9.1.0.jar:9.1.0]
-        at com.mysql.cj.jdbc.ClientPreparedStatement.executeUpdateInternal(ClientPreparedStatement.java:1166) ~[mysql-connector-j-9.1.0.jar:9.1.0]
-        at com.mysql.cj.jdbc.ClientPreparedStatement.executeUpdateInternal(ClientPreparedStatement.java:1101) ~[mysql-connector-j-9.1.0.jar:9.1.0]
-        at com.mysql.cj.jdbc.ClientPreparedStatement.executeLargeUpdate(ClientPreparedStatement.java:1467) ~[mysql-connector-j-9.1.0.jar:9.1.0]
-        at com.mysql.cj.jdbc.ClientPreparedStatement.executeUpdate(ClientPreparedStatement.java:1084) ~[mysql-connector-j-9.1.0.jar:9.1.0]
-        at com.zaxxer.hikari.pool.ProxyPreparedStatement.executeUpdate(ProxyPreparedStatement.java:61) ~[HikariCP-5.1.0.jar:na]
-        at com.zaxxer.hikari.pool.HikariProxyPreparedStatement.executeUpdate(HikariProxyPreparedStatement.java) ~[HikariCP-5.1.0.jar:na]
-        at org.hibernate.engine.jdbc.internal.ResultSetReturnImpl.executeUpdate(ResultSetReturnImpl.java:194) ~[hibernate-core-6.6.13.Final.jar:6.6.13.Final]
-        at org.hibernate.id.insert.GetGeneratedKeysDelegate.performMutation(GetGeneratedKeysDelegate.java:116) ~[hibernate-core-6.6.13.Final.jar:6.6.13.Final]
-        at org.hibernate.engine.jdbc.mutation.internal.MutationExecutorSingleNonBatched.performNonBatchedOperations(MutationExecutorSingleNonBatched.java:47) ~[hibernate-core-6.6.13.Final.jar:6.6.13.Final]
-        at org.hibernate.engine.jdbc.mutation.internal.AbstractMutationExecutor.execute(AbstractMutationExecutor.java:55) ~[hibernate-core-6.6.13.Final.jar:6.6.13.Final]
-        at org.hibernate.persister.entity.mutation.InsertCoordinatorStandard.doStaticInserts(InsertCoordinatorStandard.java:194) ~[hibernate-core-6.6.13.Final.jar:6.6.13.Final]
-        at org.hibernate.persister.entity.mutation.InsertCoordinatorStandard.coordinateInsert(InsertCoordinatorStandard.java:132) ~[hibernate-core-6.6.13.Final.jar:6.6.13.Final]
-        at org.hibernate.persister.entity.mutation.InsertCoordinatorStandard.insert(InsertCoordinatorStandard.java:95) ~[hibernate-core-6.6.13.Final.jar:6.6.13.Final]
-        at org.hibernate.action.internal.EntityIdentityInsertAction.execute(EntityIdentityInsertAction.java:85) ~[hibernate-core-6.6.13.Final.jar:6.6.13.Final]
-        at org.hibernate.engine.spi.ActionQueue.execute(ActionQueue.java:682) ~[hibernate-core-6.6.13.Final.jar:6.6.13.Final]
-        at org.hibernate.engine.spi.ActionQueue.addResolvedEntityInsertAction(ActionQueue.java:293) ~[hibernate-core-6.6.13.Final.jar:6.6.13.Final]
-        at org.hibernate.engine.spi.ActionQueue.addInsertAction(ActionQueue.java:274) ~[hibernate-core-6.6.13.Final.jar:6.6.13.Final]
-        at org.hibernate.engine.spi.ActionQueue.addAction(ActionQueue.java:324) ~[hibernate-core-6.6.13.Final.jar:6.6.13.Final]
-        at org.hibernate.event.internal.AbstractSaveEventListener.addInsertAction(AbstractSaveEventListener.java:393) ~[hibernate-core-6.6.13.Final.jar:6.6.13.Final]
-        at org.hibernate.event.internal.AbstractSaveEventListener.performSaveOrReplicate(AbstractSaveEventListener.java:307) ~[hibernate-core-6.6.13.Final.jar:6.6.13.Final]
-        at org.hibernate.event.internal.AbstractSaveEventListener.performSave(AbstractSaveEventListener.java:223) ~[hibernate-core-6.6.13.Final.jar:6.6.13.Final]
-        at org.hibernate.event.internal.AbstractSaveEventListener.saveWithGeneratedId(AbstractSaveEventListener.java:136) ~[hibernate-core-6.6.13.Final.jar:6.6.13.Final]
-        at org.hibernate.event.internal.DefaultPersistEventListener.entityIsTransient(DefaultPersistEventListener.java:177) ~[hibernate-core-6.6.13.Final.jar:6.6.13.Final]
-        at org.hibernate.event.internal.DefaultPersistEventListener.persist(DefaultPersistEventListener.java:95) ~[hibernate-core-6.6.13.Final.jar:6.6.13.Final]
-        at org.hibernate.event.internal.DefaultPersistEventListener.onPersist(DefaultPersistEventListener.java:79) ~[hibernate-core-6.6.13.Final.jar:6.6.13.Final]
-        at org.hibernate.event.internal.DefaultPersistEventListener.onPersist(DefaultPersistEventListener.java:55) ~[hibernate-core-6.6.13.Final.jar:6.6.13.Final]
-        at org.hibernate.event.service.internal.EventListenerGroupImpl.fireEventOnEachListener(EventListenerGroupImpl.java:127) ~[hibernate-core-6.6.13.Final.jar:6.6.13.Final]
-        at org.hibernate.internal.SessionImpl.firePersist(SessionImpl.java:761) ~[hibernate-core-6.6.13.Final.jar:6.6.13.Final]
-        at org.hibernate.internal.SessionImpl.persist(SessionImpl.java:745) ~[hibernate-core-6.6.13.Final.jar:6.6.13.Final]
+org.springframework.messaging.converter.MessageConversionException: Could not write JSON: failed to lazily initialize a collection of role: ptithcm.edu.pharmacy.entity.User.roles: could not initialize proxy - no Session (through reference chain: ptithcm.edu.pharmacy.entity.Message["consultationRequest"]->ptithcm.edu.pharmacy.entity.ConsultationRequest["user"]->ptithcm.edu.pharmacy.entity.User["roles"])
+        at org.springframework.messaging.converter.MappingJackson2MessageConverter.convertToInternal(MappingJackson2MessageConverter.java:295) ~[spring-messaging-6.2.6.jar:6.2.6]
+        at org.springframework.messaging.converter.AbstractMessageConverter.toMessage(AbstractMessageConverter.java:201) ~[spring-messaging-6.2.6.jar:6.2.6]
+        at org.springframework.messaging.converter.CompositeMessageConverter.toMessage(CompositeMessageConverter.java:96) ~[spring-messaging-6.2.6.jar:6.2.6]
+        at org.springframework.messaging.core.AbstractMessageSendingTemplate.doConvert(AbstractMessageSendingTemplate.java:176) ~[spring-messaging-6.2.6.jar:6.2.6]
+        at org.springframework.messaging.core.AbstractMessageSendingTemplate.convertAndSend(AbstractMessageSendingTemplate.java:150) ~[spring-messaging-6.2.6.jar:6.2.6]
+        at org.springframework.messaging.core.AbstractMessageSendingTemplate.convertAndSend(AbstractMessageSendingTemplate.java:129) ~[spring-messaging-6.2.6.jar:6.2.6]
+        at org.springframework.messaging.core.AbstractMessageSendingTemplate.convertAndSend(AbstractMessageSendingTemplate.java:122) ~[spring-messaging-6.2.6.jar:6.2.6]
+        at ptithcm.edu.pharmacy.controller.ChatController.sendMessage(ChatController.java:120) ~[classes/:na]
         at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
         at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
-        at org.springframework.orm.jpa.ExtendedEntityManagerCreator$ExtendedEntityManagerInvocationHandler.invoke(ExtendedEntityManagerCreator.java:364) ~[spring-orm-6.2.6.jar:6.2.6]
-        at jdk.proxy80/jdk.proxy80.$Proxy1121.persist(Unknown Source) ~[na:na]
-        at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
-        at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
-        at org.springframework.orm.jpa.SharedEntityManagerCreator$SharedEntityManagerInvocationHandler.invoke(SharedEntityManagerCreator.java:320) ~[spring-orm-6.2.6.jar:6.2.6]
-        at jdk.proxy80/jdk.proxy80.$Proxy1121.persist(Unknown Source) ~[na:na]
-        at org.springframework.data.jpa.repository.support.SimpleJpaRepository.save(SimpleJpaRepository.java:636) ~[spring-data-jpa-3.4.5.jar:3.4.5]
-        at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
-        at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
-        at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:359) ~[spring-aop-6.2.6.jar:6.2.6]
-        at org.springframework.data.repository.core.support.RepositoryMethodInvoker$RepositoryFragmentMethodInvoker.lambda$new$0(RepositoryMethodInvoker.java:277) ~[spring-data-commons-3.4.5.jar:3.4.5]
-        at org.springframework.data.repository.core.support.RepositoryMethodInvoker.doInvoke(RepositoryMethodInvoker.java:170) ~[spring-data-commons-3.4.5.jar:3.4.5]
-        at org.springframework.data.repository.core.support.RepositoryMethodInvoker.invoke(RepositoryMethodInvoker.java:158) ~[spring-data-commons-3.4.5.jar:3.4.5]
-        at org.springframework.data.repository.core.support.RepositoryComposition$RepositoryFragments.invoke(RepositoryComposition.java:515) ~[spring-data-commons-3.4.5.jar:3.4.5]
-        at org.springframework.data.repository.core.support.RepositoryComposition.invoke(RepositoryComposition.java:284) ~[spring-data-commons-3.4.5.jar:3.4.5]
-        at org.springframework.data.repository.core.support.RepositoryFactorySupport$ImplementationMethodExecutionInterceptor.invoke(RepositoryFactorySupport.java:731) ~[spring-data-commons-3.4.5.jar:3.4.5]
-        at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184) ~[spring-aop-6.2.6.jar:6.2.6]
-        at org.springframework.data.repository.core.support.QueryExecutorMethodInterceptor.doInvoke(QueryExecutorMethodInterceptor.java:174) ~[spring-data-commons-3.4.5.jar:3.4.5]
-        at org.springframework.data.repository.core.support.QueryExecutorMethodInterceptor.invoke(QueryExecutorMethodInterceptor.java:149) ~[spring-data-commons-3.4.5.jar:3.4.5]
-        at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184) ~[spring-aop-6.2.6.jar:6.2.6]
-        at org.springframework.data.projection.DefaultMethodInvokingMethodInterceptor.invoke(DefaultMethodInvokingMethodInterceptor.java:69) ~[spring-data-commons-3.4.5.jar:3.4.5]
-        at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184) ~[spring-aop-6.2.6.jar:6.2.6]
-        at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:380) ~[spring-tx-6.2.6.jar:6.2.6]
-        at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:119) ~[spring-tx-6.2.6.jar:6.2.6]
-        at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184) ~[spring-aop-6.2.6.jar:6.2.6]
-        at org.springframework.dao.support.PersistenceExceptionTranslationInterceptor.invoke(PersistenceExceptionTranslationInterceptor.java:138) ~[spring-tx-6.2.6.jar:6.2.6]
-        at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184) ~[spring-aop-6.2.6.jar:6.2.6]
-        at org.springframework.data.jpa.repository.support.CrudMethodMetadataPostProcessor$CrudMethodMetadataPopulatingMethodInterceptor.invoke(CrudMethodMetadataPostProcessor.java:165) ~[spring-data-jpa-3.4.5.jar:3.4.5]
-        at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184) ~[spring-aop-6.2.6.jar:6.2.6]
-        at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:223) ~[spring-aop-6.2.6.jar:6.2.6]
-        at jdk.proxy80/jdk.proxy80.$Proxy1125.save(Unknown Source) ~[na:na]
-        at ptithcm.edu.pharmacy.service.impl.OrderServiceImpl.createOrderFromCart(OrderServiceImpl.java:327) ~[classes/:na]
-        at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
-        at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
-        at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:359) ~[spring-aop-6.2.6.jar:6.2.6]
-        at org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:196) ~[spring-aop-6.2.6.jar:6.2.6]
-        at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:163) ~[spring-aop-6.2.6.jar:6.2.6]
-        at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:380) ~[spring-tx-6.2.6.jar:6.2.6]
-        at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:119) ~[spring-tx-6.2.6.jar:6.2.6]
-        at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184) ~[spring-aop-6.2.6.jar:6.2.6]
-        at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:728) ~[spring-aop-6.2.6.jar:6.2.6]
-        at ptithcm.edu.pharmacy.service.impl.OrderServiceImpl$$SpringCGLIB$$0.createOrderFromCart(<generated>) ~[classes/:na]
-        at ptithcm.edu.pharmacy.controller.OrderController.createOrderFromCart(OrderController.java:40) ~[classes/:na]
-        at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
-        at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
-        at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:258) ~[spring-web-6.2.6.jar:6.2.6]
-        at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:191) ~[spring-web-6.2.6.jar:6.2.6]
-        at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:118) ~[spring-webmvc-6.2.6.jar:6.2.6]
-        at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:986) ~[spring-webmvc-6.2.6.jar:6.2.6]
-        at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:891) ~[spring-webmvc-6.2.6.jar:6.2.6]
-        at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87) ~[spring-webmvc-6.2.6.jar:6.2.6]
-        at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1089) ~[spring-webmvc-6.2.6.jar:6.2.6]
-        at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:979) ~[spring-webmvc-6.2.6.jar:6.2.6]
-        at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014) ~[spring-webmvc-6.2.6.jar:6.2.6]
-        at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:914) ~[spring-webmvc-6.2.6.jar:6.2.6]
-        at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:590) ~[tomcat-embed-core-10.1.40.jar:6.0]
-        at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885) ~[spring-webmvc-6.2.6.jar:6.2.6]
-        at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658) ~[tomcat-embed-core-10.1.40.jar:6.0]
-        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:195) ~[tomcat-embed-core-10.1.40.jar:10.1.40]
-        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.40.jar:10.1.40]
-        at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51) ~[tomcat-embed-websocket-10.1.40.jar:10.1.40]
-        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.40.jar:10.1.40]
-        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.40.jar:10.1.40]
-        at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:110) ~[spring-web-6.2.6.jar:6.2.6]
-        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.40.jar:10.1.40]
-        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.40.jar:10.1.40]
-        at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:108) ~[spring-web-6.2.6.jar:6.2.6]
-        at org.springframework.security.web.FilterChainProxy.lambda$doFilterInternal$3(FilterChainProxy.java:231) ~[spring-security-web-6.4.5.jar:6.4.5]
-        at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:365) ~[spring-security-web-6.4.5.jar:6.4.5]
-        at org.springframework.security.web.access.intercept.AuthorizationFilter.doFilter(AuthorizationFilter.java:101) ~[spring-security-web-6.4.5.jar:6.4.5]
-        at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.4.5.jar:6.4.5]
-        at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:126) ~[spring-security-web-6.4.5.jar:6.4.5]
-        at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:120) ~[spring-security-web-6.4.5.jar:6.4.5]
-        at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.4.5.jar:6.4.5]
-        at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:131) ~[spring-security-web-6.4.5.jar:6.4.5]
-        at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:85) ~[spring-security-web-6.4.5.jar:6.4.5]
-        at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.4.5.jar:6.4.5]
-        at org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:100) ~[spring-security-web-6.4.5.jar:6.4.5]
-        at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.4.5.jar:6.4.5]
-        at org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:179) ~[spring-security-web-6.4.5.jar:6.4.5]
-        at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.4.5.jar:6.4.5]
-        at org.springframework.security.web.savedrequest.RequestCacheAwareFilter.doFilter(RequestCacheAwareFilter.java:63) ~[spring-security-web-6.4.5.jar:6.4.5]
-        at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.4.5.jar:6.4.5]
-        at ptithcm.edu.pharmacy.security.JwtAuthenticationFilter.doFilterInternal(JwtAuthenticationFilter.java:53) ~[classes/:na]
-        at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.6.jar:6.2.6]
-        at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.4.5.jar:6.4.5]
-        at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:107) ~[spring-security-web-6.4.5.jar:6.4.5]
-        at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:93) ~[spring-security-web-6.4.5.jar:6.4.5]
-        at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.4.5.jar:6.4.5]
-        at org.springframework.web.filter.CorsFilter.doFilterInternal(CorsFilter.java:91) ~[spring-web-6.2.6.jar:6.2.6]
-        at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.6.jar:6.2.6]
-        at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.4.5.jar:6.4.5]
-        at org.springframework.security.web.header.HeaderWriterFilter.doHeadersAfter(HeaderWriterFilter.java:90) ~[spring-security-web-6.4.5.jar:6.4.5]
-        at org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:75) ~[spring-security-web-6.4.5.jar:6.4.5]
-        at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.6.jar:6.2.6]
-        at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.4.5.jar:6.4.5]
-        at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:82) ~[spring-security-web-6.4.5.jar:6.4.5]
-        at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:69) ~[spring-security-web-6.4.5.jar:6.4.5]
-        at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.4.5.jar:6.4.5]
-        at org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:62) ~[spring-security-web-6.4.5.jar:6.4.5]
-        at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.6.jar:6.2.6]
-        at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.4.5.jar:6.4.5]
-        at org.springframework.security.web.session.DisableEncodeUrlFilter.doFilterInternal(DisableEncodeUrlFilter.java:42) ~[spring-security-web-6.4.5.jar:6.4.5]
-        at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.6.jar:6.2.6]
-        at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.4.5.jar:6.4.5]
-        at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:233) ~[spring-security-web-6.4.5.jar:6.4.5]
-        at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:191) ~[spring-security-web-6.4.5.jar:6.4.5]
-        at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113) ~[spring-web-6.2.6.jar:6.2.6]
-        at org.springframework.web.servlet.handler.HandlerMappingIntrospector.lambda$createCacheFilter$3(HandlerMappingIntrospector.java:243) ~[spring-webmvc-6.2.6.jar:6.2.6]
-        at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113) ~[spring-web-6.2.6.jar:6.2.6]
-        at org.springframework.web.filter.CompositeFilter.doFilter(CompositeFilter.java:74) ~[spring-web-6.2.6.jar:6.2.6]
-        at org.springframework.security.config.annotation.web.configuration.WebMvcSecurityConfiguration$CompositeFilterChainProxy.doFilter(WebMvcSecurityConfiguration.java:238) ~[spring-security-config-6.4.5.jar:6.4.5]
-        at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:362) ~[spring-web-6.2.6.jar:6.2.6]
-        at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:278) ~[spring-web-6.2.6.jar:6.2.6]
-        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.40.jar:10.1.40]
-        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.40.jar:10.1.40]
-        at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100) ~[spring-web-6.2.6.jar:6.2.6]
-        at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.6.jar:6.2.6]
-        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.40.jar:10.1.40]
-        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.40.jar:10.1.40]
-        at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93) ~[spring-web-6.2.6.jar:6.2.6]
-        at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.6.jar:6.2.6]
-        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.40.jar:10.1.40]
-        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.40.jar:10.1.40]
-        at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201) ~[spring-web-6.2.6.jar:6.2.6]
-        at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.6.jar:6.2.6]
-        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.40.jar:10.1.40]
-        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.40.jar:10.1.40]
-        at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167) ~[tomcat-embed-core-10.1.40.jar:10.1.40]
-        at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90) ~[tomcat-embed-core-10.1.40.jar:10.1.40]
-        at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:483) ~[tomcat-embed-core-10.1.40.jar:10.1.40]
-        at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:116) ~[tomcat-embed-core-10.1.40.jar:10.1.40]
-        at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93) ~[tomcat-embed-core-10.1.40.jar:10.1.40]
-        at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74) ~[tomcat-embed-core-10.1.40.jar:10.1.40]
-        at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344) ~[tomcat-embed-core-10.1.40.jar:10.1.40]
-        at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:398) ~[tomcat-embed-core-10.1.40.jar:10.1.40]
-        at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63) ~[tomcat-embed-core-10.1.40.jar:10.1.40]
-        at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:903) ~[tomcat-embed-core-10.1.40.jar:10.1.40]
-        at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1740) ~[tomcat-embed-core-10.1.40.jar:10.1.40]
-        at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52) ~[tomcat-embed-core-10.1.40.jar:10.1.40]
-        at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1189) ~[tomcat-embed-core-10.1.40.jar:10.1.40]
-        at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:658) ~[tomcat-embed-core-10.1.40.jar:10.1.40]
-        at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63) ~[tomcat-embed-core-10.1.40.jar:10.1.40]
+        at org.springframework.messaging.handler.invocation.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:169) ~[spring-messaging-6.2.6.jar:6.2.6]
+        at org.springframework.messaging.handler.invocation.InvocableHandlerMethod.invoke(InvocableHandlerMethod.java:119) ~[spring-messaging-6.2.6.jar:6.2.6]
+        at org.springframework.messaging.handler.invocation.AbstractMethodMessageHandler.handleMatch(AbstractMethodMessageHandler.java:568) ~[spring-messaging-6.2.6.jar:6.2.6]
+        at org.springframework.messaging.simp.annotation.support.SimpAnnotationMethodMessageHandler.handleMatch(SimpAnnotationMethodMessageHandler.java:530) ~[spring-messaging-6.2.6.jar:6.2.6]
+        at org.springframework.messaging.simp.annotation.support.SimpAnnotationMethodMessageHandler.handleMatch(SimpAnnotationMethodMessageHandler.java:93) ~[spring-messaging-6.2.6.jar:6.2.6]
+        at org.springframework.messaging.handler.invocation.AbstractMethodMessageHandler.handleMessageInternal(AbstractMethodMessageHandler.java:522) ~[spring-messaging-6.2.6.jar:6.2.6]
+        at org.springframework.messaging.handler.invocation.AbstractMethodMessageHandler.handleMessage(AbstractMethodMessageHandler.java:457) ~[spring-messaging-6.2.6.jar:6.2.6]
+        at org.springframework.messaging.support.ExecutorSubscribableChannel$SendTask.run(ExecutorSubscribableChannel.java:152) ~[spring-messaging-6.2.6.jar:6.2.6]
+        at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144) ~[na:na]
+        at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642) ~[na:na]
         at java.base/java.lang.Thread.run(Thread.java:1583) ~[na:na]
+Caused by: com.fasterxml.jackson.databind.JsonMappingException: failed to lazily initialize a collection of role: ptithcm.edu.pharmacy.entity.User.roles: could not initialize proxy - no Session (through reference chain: ptithcm.edu.pharmacy.entity.Message["consultationRequest"]->ptithcm.edu.pharmacy.entity.ConsultationRequest["user"]->ptithcm.edu.pharmacy.entity.User["roles"])
+        at com.fasterxml.jackson.databind.JsonMappingException.wrapWithPath(JsonMappingException.java:401) ~[jackson-databind-2.18.3.jar:2.18.3]
+        at com.fasterxml.jackson.databind.JsonMappingException.wrapWithPath(JsonMappingException.java:360) ~[jackson-databind-2.18.3.jar:2.18.3]
+        at com.fasterxml.jackson.databind.ser.std.StdSerializer.wrapAndThrow(StdSerializer.java:323) ~[jackson-databind-2.18.3.jar:2.18.3]
+        at com.fasterxml.jackson.databind.ser.std.BeanSerializerBase.serializeFields(BeanSerializerBase.java:778) ~[jackson-databind-2.18.3.jar:2.18.3]
+        at com.fasterxml.jackson.databind.ser.BeanSerializer.serialize(BeanSerializer.java:184) ~[jackson-databind-2.18.3.jar:2.18.3]
+        at com.fasterxml.jackson.databind.ser.BeanPropertyWriter.serializeAsField(BeanPropertyWriter.java:732) ~[jackson-databind-2.18.3.jar:2.18.3]
+        at com.fasterxml.jackson.databind.ser.std.BeanSerializerBase.serializeFields(BeanSerializerBase.java:770) ~[jackson-databind-2.18.3.jar:2.18.3]
+        at com.fasterxml.jackson.databind.ser.BeanSerializer.serialize(BeanSerializer.java:184) ~[jackson-databind-2.18.3.jar:2.18.3]
+        at com.fasterxml.jackson.databind.ser.BeanPropertyWriter.serializeAsField(BeanPropertyWriter.java:732) ~[jackson-databind-2.18.3.jar:2.18.3]
+        at com.fasterxml.jackson.databind.ser.std.BeanSerializerBase.serializeFields(BeanSerializerBase.java:770) ~[jackson-databind-2.18.3.jar:2.18.3]
+        at com.fasterxml.jackson.databind.ser.BeanSerializer.serialize(BeanSerializer.java:184) ~[jackson-databind-2.18.3.jar:2.18.3]
+        at com.fasterxml.jackson.databind.ser.DefaultSerializerProvider._serialize(DefaultSerializerProvider.java:502) ~[jackson-databind-2.18.3.jar:2.18.3]
+        at com.fasterxml.jackson.databind.ser.DefaultSerializerProvider.serializeValue(DefaultSerializerProvider.java:341) ~[jackson-databind-2.18.3.jar:2.18.3]
+        at com.fasterxml.jackson.databind.ObjectMapper.writeValue(ObjectMapper.java:3365) ~[jackson-databind-2.18.3.jar:2.18.3]
+        at org.springframework.messaging.converter.MappingJackson2MessageConverter.convertToInternal(MappingJackson2MessageConverter.java:277) ~[spring-messaging-6.2.6.jar:6.2.6]
+        ... 20 common frames omitted
+Caused by: org.hibernate.LazyInitializationException: failed to lazily initialize a collection of role: ptithcm.edu.pharmacy.entity.User.roles: could not initialize proxy - no Session
+        at org.hibernate.collection.spi.AbstractPersistentCollection.throwLazyInitializationException(AbstractPersistentCollection.java:635) ~[hibernate-core-6.6.13.Final.jar:6.6.13.Final]
+        at org.hibernate.collection.spi.AbstractPersistentCollection.withTemporarySessionIfNeeded(AbstractPersistentCollection.java:219) ~[hibernate-core-6.6.13.Final.jar:6.6.13.Final]
+        at org.hibernate.collection.spi.AbstractPersistentCollection.readSize(AbstractPersistentCollection.java:150) ~[hibernate-core-6.6.13.Final.jar:6.6.13.Final]
+        at org.hibernate.collection.spi.PersistentSet.size(PersistentSet.java:148) ~[hibernate-core-6.6.13.Final.jar:6.6.13.Final]
+        at com.fasterxml.jackson.databind.ser.std.CollectionSerializer.serialize(CollectionSerializer.java:97) ~[jackson-databind-2.18.3.jar:2.18.3]
+        at com.fasterxml.jackson.databind.ser.std.CollectionSerializer.serialize(CollectionSerializer.java:25) ~[jackson-databind-2.18.3.jar:2.18.3]
+        at com.fasterxml.jackson.databind.ser.BeanPropertyWriter.serializeAsField(BeanPropertyWriter.java:732) ~[jackson-databind-2.18.3.jar:2.18.3]
+        at com.fasterxml.jackson.databind.ser.std.BeanSerializerBase.serializeFields(BeanSerializerBase.java:770) ~[jackson-databind-2.18.3.jar:2.18.3]
+        ... 31 common frames omitted
+

@@ -1,0 +1,912 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+
+// GHN API constants
+const GHN_API_BASE = 'https://online-gateway.ghn.vn/shiip/public-api/v2';
+const GHN_TOKEN = ''; //
+const SHOP_ID = ''; // User's correct Shop ID
+
+// Types
+interface Province {
+    ProvinceID: number;
+    ProvinceName: string;
+    Code: string;
+}
+
+interface District {
+    DistrictID: number;
+    DistrictName: string;
+    ProvinceID: number;
+}
+
+interface Ward {
+    WardCode: string;
+    WardName: string;
+    DistrictID: number;
+}
+
+interface Service {
+    service_id: number;
+    service_type_id: number;
+    short_name: string;
+    service_name: string;
+}
+
+interface ShippingFeeParams {
+    from_district_id: number;
+    service_id: number;
+    to_district_id: number;
+    to_ward_code: string;
+    height: number;
+    length: number;
+    weight: number;
+    width: number;
+    insurance_value: number;
+}
+
+interface ShippingOrder {
+    payment_type_id: number;
+    note: string;
+    required_note: string;
+    return_phone: string;
+    return_address: string;
+    return_district_id: number;
+    return_ward_code: string;
+    client_order_code: string;
+    to_name: string;
+    to_phone: string;
+    to_address: string;
+    to_ward_code: string;
+    to_district_id: number;
+    cod_amount: number;
+    content: string;
+    weight: number;
+    length: number;
+    width: number;
+    height: number;
+    service_id: number;
+    service_type_id: number;
+    items: {
+        name: string;
+        code: string;
+        quantity: number;
+        price: number;
+        length: number;
+        width: number;
+        height: number;
+        weight: number;
+    }[];
+}
+
+export default function TestPage() {
+    // Loading and error states
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    // Data states
+    const [provinces, setProvinces] = useState<Province[]>([]);
+    const [districts, setDistricts] = useState<District[]>([]);
+    const [wards, setWards] = useState<Ward[]>([]);
+    const [services, setServices] = useState<Service[]>([]);
+
+    // Selection states
+    const [selectedFromProvince, setSelectedFromProvince] = useState<number | null>(null);
+    const [selectedFromDistrict, setSelectedFromDistrict] = useState<number | null>(null);
+    const [selectedFromWard, setSelectedFromWard] = useState<string | null>(null);
+
+    const [selectedToProvince, setSelectedToProvince] = useState<number | null>(null);
+    const [selectedToDistrict, setSelectedToDistrict] = useState<number | null>(null);
+    const [selectedToWard, setSelectedToWard] = useState<string | null>(null);
+
+    const [selectedService, setSelectedService] = useState<number | null>(null);
+
+    // Package details
+    const [packageDetails, setPackageDetails] = useState({
+        weight: 1000,
+        length: 20,
+        width: 15,
+        height: 15,
+        insurance_value: 500000,
+    });
+
+    // Shipping fee result
+    const [shippingFee, setShippingFee] = useState<number | null>(null);
+
+    // Order form state
+    const [orderForm, setOrderForm] = useState<ShippingOrder>({
+        payment_type_id: 2,
+        note: "Giao hàng trong giờ hành chính",
+        required_note: "KHONGCHOXEMHANG",
+        return_phone: "",
+        return_address: "",
+        return_district_id: 0,
+        return_ward_code: "",
+        client_order_code: `DH${Date.now()}`,
+        to_name: "",
+        to_phone: "",
+        to_address: "",
+        to_ward_code: "",
+        to_district_id: 0,
+        cod_amount: 0,
+        content: "Đơn hàng",
+        weight: 1000,
+        length: 20,
+        width: 15,
+        height: 15,
+        service_id: 0,
+        service_type_id: 2,
+        items: [
+            {
+                name: "Sản phẩm",
+                code: "SP001",
+                quantity: 1,
+                price: 500000,
+                length: 20,
+                width: 15,
+                height: 15,
+                weight: 1000
+            }
+        ]
+    });
+
+    // Order result
+    const [orderResult, setOrderResult] = useState<any>(null);
+
+    // Order detail
+    const [orderCode, setOrderCode] = useState<string>("");
+    const [orderDetail, setOrderDetail] = useState<any>(null);
+
+    // Fetch base data on load
+    useEffect(() => {
+        fetchProvinces();
+    }, []);
+
+    // Fetch districts when province changes
+    useEffect(() => {
+        if (selectedFromProvince) {
+            fetchDistricts(selectedFromProvince);
+        }
+    }, [selectedFromProvince]);
+
+    useEffect(() => {
+        if (selectedToProvince) {
+            fetchToDistricts(selectedToProvince);
+        }
+    }, [selectedToProvince]);
+
+    // Fetch wards when district changes
+    useEffect(() => {
+        if (selectedFromDistrict) {
+            fetchWards(selectedFromDistrict);
+        }
+    }, [selectedFromDistrict]);
+
+    useEffect(() => {
+        if (selectedToDistrict) {
+            fetchToWards(selectedToDistrict);
+        }
+    }, [selectedToDistrict]);
+
+    // Fetch services when to and from districts are selected
+    useEffect(() => {
+        if (selectedFromDistrict && selectedToDistrict) {
+            fetchServices(selectedFromDistrict, selectedToDistrict);
+        }
+    }, [selectedFromDistrict, selectedToDistrict]);
+
+    // API functions
+    async function fetchProvinces() {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await axios.get(`https://online-gateway.ghn.vn/shiip/public-api/master-data/province`, {
+                headers: {
+                    Token: GHN_TOKEN
+                }
+            });
+
+            if (response.data.code === 200) {
+                setProvinces(response.data.data);
+            } else {
+                setError(`Error fetching provinces: ${response.data.message}`);
+            }
+        } catch (err: any) {
+            setError(`Error fetching provinces: ${err.message}`);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    async function fetchDistricts(provinceId: number) {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await axios.get(`https://online-gateway.ghn.vn/shiip/public-api/master-data/district`, {
+                params: { province_id: provinceId },
+                headers: {
+                    Token: GHN_TOKEN
+                }
+            });
+
+            if (response.data.code === 200) {
+                setDistricts(response.data.data);
+            } else {
+                setError(`Error fetching districts: ${response.data.message}`);
+            }
+        } catch (err: any) {
+            setError(`Error fetching districts: ${err.message}`);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    async function fetchToDistricts(provinceId: number) {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await axios.get(`https://online-gateway.ghn.vn/shiip/public-api/master-data/district`, {
+                params: { province_id: provinceId },
+                headers: {
+                    Token: GHN_TOKEN
+                }
+            });
+
+            if (response.data.code === 200) {
+                setDistricts(response.data.data);
+            } else {
+                setError(`Error fetching districts: ${response.data.message}`);
+            }
+        } catch (err: any) {
+            setError(`Error fetching districts: ${err.message}`);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    async function fetchWards(districtId: number) {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await axios.get(`https://online-gateway.ghn.vn/shiip/public-api/master-data/ward`, {
+                params: { district_id: districtId },
+                headers: {
+                    Token: GHN_TOKEN
+                }
+            });
+
+            if (response.data.code === 200) {
+                setWards(response.data.data);
+            } else {
+                setError(`Error fetching wards: ${response.data.message}`);
+            }
+        } catch (err: any) {
+            setError(`Error fetching wards: ${err.message}`);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    async function fetchToWards(districtId: number) {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await axios.get(`https://online-gateway.ghn.vn/shiip/public-api/master-data/ward`, {
+                params: { district_id: districtId },
+                headers: {
+                    Token: GHN_TOKEN
+                }
+            });
+
+            if (response.data.code === 200) {
+                setWards(response.data.data);
+            } else {
+                setError(`Error fetching wards: ${response.data.message}`);
+            }
+        } catch (err: any) {
+            setError(`Error fetching wards: ${err.message}`);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    async function fetchServices(fromDistrictId: number, toDistrictId: number) {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await axios.get(`https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/available-services`, {
+                params: {
+                    shop_id: SHOP_ID,
+                    from_district: fromDistrictId,
+                    to_district: toDistrictId
+                },
+                headers: {
+                    Token: GHN_TOKEN
+                }
+            });
+
+            if (response.data.code === 200) {
+                setServices(response.data.data);
+                if (response.data.data.length > 0) {
+                    setSelectedService(response.data.data[0].service_id);
+                    setOrderForm(prev => ({
+                        ...prev,
+                        service_id: response.data.data[0].service_id,
+                        service_type_id: response.data.data[0].service_type_id
+                    }));
+                }
+            } else {
+                setError(`Error fetching services: ${response.data.message}`);
+            }
+        } catch (err: any) {
+            setError(`Error fetching services: ${err.message}`);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    async function calculateShippingFee() {
+        if (!selectedFromDistrict || !selectedToDistrict || !selectedToWard || !selectedService) {
+            setError("Vui lòng chọn đầy đủ thông tin địa chỉ");
+            return;
+        }
+
+        setLoading(true);
+        setError(null);
+
+        const payload = {
+            from_district_id: parseInt(selectedFromDistrict.toString()),
+            service_id: parseInt(selectedService.toString()),
+            to_district_id: parseInt(selectedToDistrict.toString()),
+            to_ward_code: selectedToWard,
+            height: parseInt(packageDetails.height.toString()),
+            length: parseInt(packageDetails.length.toString()),
+            weight: parseInt(packageDetails.weight.toString()),
+            width: parseInt(packageDetails.width.toString()),
+            insurance_value: parseInt(packageDetails.insurance_value.toString()),
+            coupon: null
+        };
+
+        console.log("Shipping fee payload:", payload);
+
+        try {
+            const response = await axios.post(`${GHN_API_BASE}/shipping-order/fee`, payload, {
+                headers: {
+                    Token: GHN_TOKEN,
+                    ShopId: parseInt(SHOP_ID),
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            console.log("Shipping fee response:", response.data);
+
+            if (response.data.code === 200) {
+                setShippingFee(response.data.data.total);
+            } else {
+                setError(`Lỗi tính phí vận chuyển: ${response.data.message}`);
+            }
+        } catch (err: any) {
+            console.log("Error response:", err.response?.data);
+            setError(`Lỗi tính phí vận chuyển: ${err.response?.data?.message || err.message}`);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    async function createOrder() {
+        setLoading(true);
+        setError(null);
+
+        try {
+            const response = await axios.post(`${GHN_API_BASE}/shipping-order/create`, orderForm, {
+                headers: {
+                    Token: GHN_TOKEN,
+                    ShopId: SHOP_ID,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.data.code === 200) {
+                setOrderResult(response.data.data);
+                setOrderCode(response.data.data.order_code);
+            } else {
+                setError(`Error creating order: ${response.data.message}`);
+            }
+        } catch (err: any) {
+            setError(`Error creating order: ${err.message}`);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    async function getOrderDetail() {
+        if (!orderCode) {
+            setError("Please enter order code");
+            return;
+        }
+
+        setLoading(true);
+        setError(null);
+
+        try {
+            const response = await axios.get(`${GHN_API_BASE}/shipping-order/detail`, {
+                params: { order_code: orderCode },
+                headers: {
+                    Token: GHN_TOKEN,
+                    ShopId: SHOP_ID
+                }
+            });
+
+            if (response.data.code === 200) {
+                setOrderDetail(response.data.data);
+            } else {
+                setError(`Error getting order details: ${response.data.message}`);
+            }
+        } catch (err: any) {
+            setError(`Error getting order details: ${err.message}`);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    async function cancelOrder() {
+        if (!orderCode) {
+            setError("Please enter order code");
+            return;
+        }
+
+        setLoading(true);
+        setError(null);
+
+        try {
+            const response = await axios.post(`${GHN_API_BASE}/switch-status/cancel`, {
+                order_codes: [orderCode]
+            }, {
+                headers: {
+                    Token: GHN_TOKEN,
+                    ShopId: SHOP_ID,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.data.code === 200) {
+                alert("Order cancelled successfully");
+                setOrderDetail(null);
+            } else {
+                setError(`Error cancelling order: ${response.data.message}`);
+            }
+        } catch (err: any) {
+            setError(`Error cancelling order: ${err.message}`);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    // Handle input changes
+    const handlePackageDetailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setPackageDetails(prev => ({
+            ...prev,
+            [name]: parseInt(value)
+        }));
+    };
+
+    const handleOrderFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+
+        // Check if it's a numeric field
+        const numericFields = ['cod_amount', 'weight', 'length', 'width', 'height', 'payment_type_id', 'service_id', 'service_type_id', 'return_district_id', 'to_district_id'];
+
+        setOrderForm(prev => ({
+            ...prev,
+            [name]: numericFields.includes(name) ? parseInt(value) : value
+        }));
+    };
+
+    return (
+        <div className="container mx-auto p-4">
+            <h1 className="text-2xl font-bold mb-6 text-black">GHN Shipping Integration</h1>
+
+            {error && (
+                <div className="bg-red-100 border border-red-400 text-black px-4 py-3 rounded mb-4">
+                    {error}
+                </div>
+            )}
+
+            {loading && (
+                <div className="bg-blue-100 border border-blue-400 text-black px-4 py-3 rounded mb-4">
+                    Loading...
+                </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-white p-6 rounded-lg shadow-md">
+                    <h2 className="text-xl font-semibold mb-4 text-black">1. Tính phí vận chuyển</h2>
+
+                    <div className="mb-4">
+                        <h3 className="font-medium mb-2 text-black">Địa chỉ gửi hàng</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-black mb-1">Tỉnh/Thành phố</label>
+                                <select
+                                    className="w-full p-2 border rounded-md text-black"
+                                    value={selectedFromProvince || ''}
+                                    onChange={(e) => setSelectedFromProvince(parseInt(e.target.value))}
+                                >
+                                    <option value="">Chọn Tỉnh/TP</option>
+                                    {provinces.map(province => (
+                                        <option key={province.ProvinceID} value={province.ProvinceID}>
+                                            {province.ProvinceName}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-black mb-1">Quận/Huyện</label>
+                                <select
+                                    className="w-full p-2 border rounded-md text-black"
+                                    value={selectedFromDistrict || ''}
+                                    onChange={(e) => setSelectedFromDistrict(parseInt(e.target.value))}
+                                    disabled={!selectedFromProvince}
+                                >
+                                    <option value="">Chọn Quận/Huyện</option>
+                                    {districts.map(district => (
+                                        <option key={district.DistrictID} value={district.DistrictID}>
+                                            {district.DistrictName}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="mb-4">
+                        <h3 className="font-medium mb-2 text-black">Địa chỉ nhận hàng</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-black mb-1">Tỉnh/Thành phố</label>
+                                <select
+                                    className="w-full p-2 border rounded-md text-black"
+                                    value={selectedToProvince || ''}
+                                    onChange={(e) => setSelectedToProvince(parseInt(e.target.value))}
+                                >
+                                    <option value="">Chọn Tỉnh/TP</option>
+                                    {provinces.map(province => (
+                                        <option key={province.ProvinceID} value={province.ProvinceID}>
+                                            {province.ProvinceName}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-black mb-1">Quận/Huyện</label>
+                                <select
+                                    className="w-full p-2 border rounded-md text-black"
+                                    value={selectedToDistrict || ''}
+                                    onChange={(e) => setSelectedToDistrict(parseInt(e.target.value))}
+                                    disabled={!selectedToProvince}
+                                >
+                                    <option value="">Chọn Quận/Huyện</option>
+                                    {districts.map(district => (
+                                        <option key={district.DistrictID} value={district.DistrictID}>
+                                            {district.DistrictName}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-black mb-1">Phường/Xã</label>
+                                <select
+                                    className="w-full p-2 border rounded-md text-black"
+                                    value={selectedToWard || ''}
+                                    onChange={(e) => setSelectedToWard(e.target.value)}
+                                    disabled={!selectedToDistrict}
+                                >
+                                    <option value="">Chọn Phường/Xã</option>
+                                    {wards.map(ward => (
+                                        <option key={ward.WardCode} value={ward.WardCode}>
+                                            {ward.WardName}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-black mb-1">Dịch vụ vận chuyển</label>
+                                <select
+                                    className="w-full p-2 border rounded-md text-black"
+                                    value={selectedService || ''}
+                                    onChange={(e) => setSelectedService(parseInt(e.target.value))}
+                                    disabled={!selectedFromDistrict || !selectedToDistrict}
+                                >
+                                    <option value="">Chọn dịch vụ</option>
+                                    {services.map(service => (
+                                        <option key={service.service_id} value={service.service_id}>
+                                            {service.service_name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="mb-4">
+                        <h3 className="font-medium mb-2 text-black">Thông tin hàng hóa</h3>
+                        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-black mb-1">Cân nặng (g)</label>
+                                <input
+                                    type="number"
+                                    name="weight"
+                                    className="w-full p-2 border rounded-md text-black placeholder-black"
+                                    value={packageDetails.weight}
+                                    onChange={handlePackageDetailChange}
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-black mb-1">Dài (cm)</label>
+                                <input
+                                    type="number"
+                                    name="length"
+                                    className="w-full p-2 border rounded-md text-black placeholder-black"
+                                    value={packageDetails.length}
+                                    onChange={handlePackageDetailChange}
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-black mb-1">Rộng (cm)</label>
+                                <input
+                                    type="number"
+                                    name="width"
+                                    className="w-full p-2 border rounded-md text-black placeholder-black"
+                                    value={packageDetails.width}
+                                    onChange={handlePackageDetailChange}
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-black mb-1">Cao (cm)</label>
+                                <input
+                                    type="number"
+                                    name="height"
+                                    className="w-full p-2 border rounded-md text-black placeholder-black"
+                                    value={packageDetails.height}
+                                    onChange={handlePackageDetailChange}
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-black mb-1">Giá trị (VND)</label>
+                                <input
+                                    type="number"
+                                    name="insurance_value"
+                                    className="w-full p-2 border rounded-md text-black placeholder-black"
+                                    value={packageDetails.insurance_value}
+                                    onChange={handlePackageDetailChange}
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <button
+                        onClick={calculateShippingFee}
+                        className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded"
+                        disabled={loading || !selectedFromDistrict || !selectedToDistrict || !selectedToWard || !selectedService}
+                    >
+                        Tính phí vận chuyển
+                    </button>
+
+                    {shippingFee !== null && (
+                        <div className="mt-4 p-4 bg-green-100 rounded-md">
+                            <p className="font-semibold text-black">Phí vận chuyển: <span className="text-black">{shippingFee.toLocaleString()} VND</span></p>
+                        </div>
+                    )}
+                </div>
+
+                <div className="bg-white p-6 rounded-lg shadow-md">
+                    <h2 className="text-xl font-semibold mb-4 text-black">2. Tạo đơn hàng</h2>
+
+                    <div className="mb-4">
+                        <h3 className="font-medium mb-2 text-black">Thông tin người nhận</h3>
+                        <div className="grid grid-cols-1 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-black mb-1">Tên người nhận</label>
+                                <input
+                                    type="text"
+                                    name="to_name"
+                                    className="w-full p-2 border rounded-md text-black placeholder-black"
+                                    value={orderForm.to_name}
+                                    onChange={handleOrderFormChange}
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-black mb-1">Số điện thoại</label>
+                                <input
+                                    type="text"
+                                    name="to_phone"
+                                    className="w-full p-2 border rounded-md text-black placeholder-black"
+                                    value={orderForm.to_phone}
+                                    onChange={handleOrderFormChange}
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-black mb-1">Địa chỉ chi tiết</label>
+                                <input
+                                    type="text"
+                                    name="to_address"
+                                    className="w-full p-2 border rounded-md text-black placeholder-black"
+                                    value={orderForm.to_address}
+                                    onChange={handleOrderFormChange}
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="mb-4">
+                        <h3 className="font-medium mb-2 text-black">Thông tin người gửi</h3>
+                        <div className="grid grid-cols-1 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-black mb-1">Số điện thoại người gửi</label>
+                                <input
+                                    type="text"
+                                    name="return_phone"
+                                    className="w-full p-2 border rounded-md text-black placeholder-black"
+                                    value={orderForm.return_phone}
+                                    onChange={handleOrderFormChange}
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-black mb-1">Địa chỉ chi tiết người gửi</label>
+                                <input
+                                    type="text"
+                                    name="return_address"
+                                    className="w-full p-2 border rounded-md text-black placeholder-black"
+                                    value={orderForm.return_address}
+                                    onChange={handleOrderFormChange}
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="mb-4">
+                        <h3 className="font-medium mb-2 text-black">Thông tin đơn hàng</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-black mb-1">Mã đơn hàng</label>
+                                <input
+                                    type="text"
+                                    name="client_order_code"
+                                    className="w-full p-2 border rounded-md text-black placeholder-black"
+                                    value={orderForm.client_order_code}
+                                    onChange={handleOrderFormChange}
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-black mb-1">Số tiền thu hộ (COD)</label>
+                                <input
+                                    type="number"
+                                    name="cod_amount"
+                                    className="w-full p-2 border rounded-md text-black placeholder-black"
+                                    value={orderForm.cod_amount}
+                                    onChange={handleOrderFormChange}
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-black mb-1">Người trả phí</label>
+                                <select
+                                    name="payment_type_id"
+                                    className="w-full p-2 border rounded-md text-black"
+                                    value={orderForm.payment_type_id}
+                                    onChange={handleOrderFormChange}
+                                >
+                                    <option value="1">Người gửi trả phí</option>
+                                    <option value="2">Người nhận trả phí</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-black mb-1">Ghi chú bắt buộc</label>
+                                <select
+                                    name="required_note"
+                                    className="w-full p-2 border rounded-md text-black"
+                                    value={orderForm.required_note}
+                                    onChange={handleOrderFormChange}
+                                >
+                                    <option value="KHONGCHOXEMHANG">Không cho xem hàng</option>
+                                    <option value="CHOXEMHANGKHONGTHU">Cho xem hàng không thu tiền</option>
+                                    <option value="CHOTHUHANG">Cho thử hàng</option>
+                                </select>
+                            </div>
+
+                            <div className="md:col-span-2">
+                                <label className="block text-sm font-medium text-black mb-1">Ghi chú</label>
+                                <textarea
+                                    name="note"
+                                    className="w-full p-2 border rounded-md text-black placeholder-black"
+                                    value={orderForm.note}
+                                    onChange={handleOrderFormChange}
+                                    rows={2}
+                                ></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button
+                        onClick={createOrder}
+                        className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded"
+                        disabled={loading}
+                    >
+                        Tạo đơn hàng
+                    </button>
+
+                    {orderResult && (
+                        <div className="mt-4 p-4 bg-green-100 rounded-md">
+                            <p className="font-semibold text-black">Đơn hàng đã được tạo!</p>
+                            <p className="text-black">Mã đơn hàng: <span className="font-mono">{orderResult.order_code}</span></p>
+                            <p className="text-black">Phí vận chuyển: {orderResult.total_fee.toLocaleString()} VND</p>
+                            <p className="text-black">Dự kiến giao: {new Date(orderResult.expected_delivery_time).toLocaleDateString()}</p>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-white p-6 rounded-lg shadow-md">
+                    <h2 className="text-xl font-semibold mb-4 text-black">3. Tra cứu đơn hàng</h2>
+
+                    <div className="flex space-x-4">
+                        <input
+                            type="text"
+                            className="flex-1 p-2 border rounded-md text-black placeholder-black"
+                            placeholder="Nhập mã đơn hàng GHN"
+                            value={orderCode}
+                            onChange={(e) => setOrderCode(e.target.value)}
+                        />
+                        <button
+                            onClick={getOrderDetail}
+                            className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded"
+                            disabled={loading || !orderCode}
+                        >
+                            Tra cứu
+                        </button>
+                    </div>
+
+                    {orderDetail && (
+                        <div className="mt-4 p-4 bg-gray-100 rounded-md">
+                            <h3 className="font-semibold text-lg mb-2 text-black">Thông tin đơn hàng #{orderDetail.order_code}</h3>
+                            <div className="grid grid-cols-2 gap-2">
+                                <p className="text-black"><span className="font-medium">Trạng thái:</span> {orderDetail.status}</p>
+                                <p className="text-black"><span className="font-medium">Dịch vụ:</span> {orderDetail.service_name}</p>
+                                <p className="text-black"><span className="font-medium">Người nhận:</span> {orderDetail.to_name}</p>
+                                <p className="text-black"><span className="font-medium">SĐT:</span> {orderDetail.to_phone}</p>
+                                <p className="text-black"><span className="font-medium">Địa chỉ:</span> {orderDetail.to_address}</p>
+                                <p className="text-black"><span className="font-medium">COD:</span> {orderDetail.cod_amount.toLocaleString()} VND</p>
+                                <p className="text-black"><span className="font-medium">Phí:</span> {orderDetail.total_fee.toLocaleString()} VND</p>
+                                <p className="text-black"><span className="font-medium">Ngày tạo:</span> {new Date(orderDetail.created_date).toLocaleString()}</p>
+                            </div>
+
+                            <button
+                                onClick={cancelOrder}
+                                className="mt-4 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded"
+                                disabled={loading || orderDetail.status !== 'ready_to_pick'}
+                            >
+                                Hủy đơn hàng
+                            </button>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+} 

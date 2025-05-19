@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.List; // Import List
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.security.access.AccessDeniedException; // For authorization check
@@ -42,9 +43,22 @@ import org.slf4j.LoggerFactory;
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
 
+    private static final Logger log = LoggerFactory.getLogger(OrderServiceImpl.class);
+
     // Define the cancellable statuses
-    private static final Set<String> CANCELLABLE_STATUSES = Set.of("PENDING"); // Add other cancellable status names
-                                                                               // here if needed (e.g., "PROCESSING")
+    private static final Set<String> CANCELLABLE_STATUSES = Set.of("PENDING");
+
+    // Định nghĩa các trạng thái mà admin có thể chuyển đến và các chuyển đổi hợp lệ
+    // Đảm bảo trường này được khai báo chính xác như sau:
+    private static final Map<String, Set<String>> VALID_STATUS_TRANSITIONS_BY_ADMIN = Map.of(
+            "PENDING", Set.of("CONFIRMED", "PROCESSING", "CANCELLED", "ON_HOLD"),
+            "CONFIRMED", Set.of("PROCESSING", "SHIPPED", "CANCELLED"),
+            "PROCESSING", Set.of("SHIPPED", "DELIVERED", "CANCELLED", "ON_HOLD"),
+            "SHIPPED", Set.of("DELIVERED", "RETURNED"),
+            "ON_HOLD", Set.of("PENDING", "PROCESSING", "CANCELLED")
+    // Các trạng thái cuối như DELIVERED, CANCELLED, RETURNED thường không cho phép
+    // chuyển tiếp nữa
+    );
 
     private final OrderRepository orderRepository; // Injected here
     private final UserRepository userRepository;
@@ -55,8 +69,7 @@ public class OrderServiceImpl implements OrderService {
     private final ShoppingCartRepository shoppingCartRepository;
     private final ShoppingCartItemRepository shoppingCartItemRepository; // Need this to delete items
     private final PromotionRepository promotionRepository; // Add this line
-    private final PromotionUsageRepository promotionUsageRepository; // <-- Add this field
-    private static final Logger log = LoggerFactory.getLogger(OrderServiceImpl.class); // Add logger instance
+    private final PromotionUsageRepository promotionUsageRepository;
 
     @Override
     @Transactional
@@ -142,7 +155,8 @@ public class OrderServiceImpl implements OrderService {
 
             int quantity = cartItem.getQuantity();
             Integer currentQuantityInDb = inventory.getQuantityOnHand(); // Lấy số lượng hiện tại từ DB
-            int currentStock = (currentQuantityInDb == null) ? 0 : currentQuantityInDb.intValue(); // Nếu null thì coi là 0
+            int currentStock = (currentQuantityInDb == null) ? 0 : currentQuantityInDb.intValue(); // Nếu null thì coi
+                                                                                                   // là 0
 
             // Check stock using the inventory from the cart item (which is branch-specific)
             // Sử dụng currentStock đã được kiểm tra null
@@ -184,11 +198,14 @@ public class OrderServiceImpl implements OrderService {
                 branchInventoryRepository.save(inventory);
                 log.debug("Successfully updated inventory for product ID {} at branch ID {}. New quantity: {}",
                         product.getId(), inventory.getBranch().getBranchId(), inventory.getQuantityOnHand());
-            } catch (org.springframework.dao.DataAccessException e) { // Catch Spring's DataAccessException for DB errors
+            } catch (org.springframework.dao.DataAccessException e) { // Catch Spring's DataAccessException for DB
+                                                                      // errors
                 log.error("Error saving updated BranchInventory for inventory ID {} (Product ID {}, Branch ID {}): {}",
-                        inventory.getInventoryId(), product.getId(), inventory.getBranch().getBranchId(), e.getMessage(), e);
+                        inventory.getInventoryId(), product.getId(), inventory.getBranch().getBranchId(),
+                        e.getMessage(), e);
                 // Tùy thuộc vào hành vi mong muốn, bạn có thể ném lại một exception tùy chỉnh
-                // hoặc xử lý nó (ví dụ: cố gắng rollback một phần đơn hàng nếu có thể, mặc dù phức tạp)
+                // hoặc xử lý nó (ví dụ: cố gắng rollback một phần đơn hàng nếu có thể, mặc dù
+                // phức tạp)
                 throw new RuntimeException("Failed to update stock for product ID " + product.getId() +
                         " at branch ID " + inventory.getBranch().getBranchId() + ". Order creation aborted.", e);
             }
@@ -240,10 +257,13 @@ public class OrderServiceImpl implements OrderService {
                 }
                 if (isValid) {
                     boolean branchApplicable = true;
-                    // Vì Order entity không còn trường 'branch', order.getBranch() sẽ không còn tại hoặc luôn null.
-                    // Đối với đơn hàng hợp nhất, nếu một khuyến mãi là dành riêng cho chi nhánh cụ thể (SPECIFIC_BRANCHES)
+                    // Vì Order entity không còn trường 'branch', order.getBranch() sẽ không còn tại
+                    // hoặc luôn null.
+                    // Đối với đơn hàng hợp nhất, nếu một khuyến mãi là dành riêng cho chi nhánh cụ
+                    // thể (SPECIFIC_BRANCHES)
                     // hoặc có danh sách chi nhánh áp dụng, nó sẽ được coi là không áp dụng
-                    // ở cấp độ toàn bộ đơn hàng, vì đơn hàng hợp nhất không gắn với một chi nhánh chính duy nhất.
+                    // ở cấp độ toàn bộ đơn hàng, vì đơn hàng hợp nhất không gắn với một chi nhánh
+                    // chính duy nhất.
                     if (promotion.getApplicableScope() == ApplicableScope.SPECIFIC_BRANCHES ||
                             (promotion.getBranches() != null && !promotion.getBranches().isEmpty())) {
                         log.warn(
@@ -251,7 +271,8 @@ public class OrderServiceImpl implements OrderService {
                                 promotionCode);
                         branchApplicable = false;
                     }
-                    // Khối 'else' trước đó (kiểm tra order.getBranch()) đã được loại bỏ vì nó không còn cần thiết.
+                    // Khối 'else' trước đó (kiểm tra order.getBranch()) đã được loại bỏ vì nó không
+                    // còn cần thiết.
 
                     if (!branchApplicable) {
                         // Log cũ liên quan đến order.getBranch() != null cũng được loại bỏ.
@@ -578,5 +599,89 @@ public class OrderServiceImpl implements OrderService {
     private String generateOrderCode() {
         // Simple unique code generator (e.g., "ORD-" + UUID)
         return "ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    }
+
+    // Các trạng thái cuối như DELIVERED, CANCELLED, RETURNED thường không cho phép
+    // chuyển tiếp nữa
+    // "DELIVERED", Set.of(),
+    // "CANCELLED", Set.of()
+    // );
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<OrderResponseDTO> getAllOrdersForAdmin() {
+        log.info("Admin: Fetching all orders.");
+        return orderRepository.findAll().stream()
+                .map(this::mapOrderToResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public OrderResponseDTO updateOrderStatusByAdmin(Integer orderId, String newStatusName) {
+        log.info("Admin: Attempting to update status of order ID {} to {}", orderId, newStatusName);
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> {
+                    log.warn("Admin: Order not found with ID: {}", orderId);
+                    return new EntityNotFoundException("Order not found with ID: " + orderId);
+                });
+
+        OrderStatus currentStatus = order.getOrderStatus();
+        if (currentStatus == null || currentStatus.getStatusName() == null) {
+            log.error("Admin: Order ID {} has a null or invalid current status.", orderId);
+            throw new IllegalStateException("Order ID " + orderId + " has an invalid current status.");
+        }
+        String currentStatusName = currentStatus.getStatusName().toUpperCase();
+        String targetStatusName = newStatusName.toUpperCase();
+
+        // Kiểm tra xem trạng thái mới có hợp lệ không
+        OrderStatus newOrderStatus = orderStatusRepository.findByStatusNameIgnoreCase(targetStatusName)
+                .orElseThrow(() -> {
+                    log.warn("Admin: Invalid target status name '{}' for order ID {}", targetStatusName, orderId);
+                    return new IllegalArgumentException("Invalid order status: " + targetStatusName +
+                            ". Valid statuses are: PENDING, CONFIRMED, PROCESSING, SHIPPED, DELIVERED, CANCELLED, ON_HOLD, RETURNED.");
+                });
+
+        // Kiểm tra logic chuyển đổi trạng thái
+        Set<String> allowedTransitions = VALID_STATUS_TRANSITIONS_BY_ADMIN.get(currentStatusName);
+        if (allowedTransitions == null || !allowedTransitions.contains(targetStatusName)) {
+            log.warn("Admin: Invalid status transition for order ID {} from {} to {}. Allowed transitions: {}",
+                    orderId, currentStatusName, targetStatusName, allowedTransitions);
+            throw new IllegalStateException(
+                    "Cannot change order status from " + currentStatusName + " to " + targetStatusName +
+                            ". Allowed transitions from " + currentStatusName + " are: "
+                            + (allowedTransitions != null ? String.join(", ", allowedTransitions) : "None"));
+        }
+
+        // Không cho phép cập nhật trạng thái nếu đơn hàng đã ở trạng thái cuối cùng (ví
+        // dụ: DELIVERED, CANCELLED)
+        // trừ khi có logic nghiệp vụ đặc biệt.
+        if (Set.of("DELIVERED", "CANCELLED", "RETURNED").contains(currentStatusName)) {
+            log.warn("Admin: Order ID {} is already in a final state ({}) and cannot be updated further by admin.",
+                    orderId, currentStatusName);
+            throw new IllegalStateException(
+                    "Order is already in a final state (" + currentStatusName + ") and cannot be updated.");
+        }
+
+        order.setOrderStatus(newOrderStatus);
+        order.setUpdatedAt(LocalDateTime.now()); // Cập nhật thời gian
+
+        // Nếu chuyển sang 'DELIVERED', cập nhật paymentStatus thành 'PAID' nếu đang là
+        // 'PENDING' và là COD
+        if ("DELIVERED".equalsIgnoreCase(targetStatusName) &&
+                order.getPaymentType() != null && "COD".equalsIgnoreCase(order.getPaymentType().getTypeName()) && // Giả
+                                                                                                                  // sử
+                                                                                                                  // có
+                                                                                                                  // getTypeName()
+                order.getPaymentStatus() == PaymentStatus.PENDING) {
+            order.setPaymentStatus(PaymentStatus.PAID);
+            log.info("Admin: Order ID {} status changed to DELIVERED. Payment status updated to PAID for COD.",
+                    orderId);
+        }
+
+        Order updatedOrder = orderRepository.save(order);
+        log.info("Admin: Successfully updated status of order ID {} to {}", orderId, newOrderStatus.getStatusName());
+        return mapOrderToResponseDTO(updatedOrder);
     }
 }

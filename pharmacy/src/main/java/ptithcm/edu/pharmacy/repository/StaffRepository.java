@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import ptithcm.edu.pharmacy.entity.Staff;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -16,4 +17,6 @@ public interface StaffRepository extends JpaRepository<Staff, Integer> {
 
     // Check if staff exists by user ID
     boolean existsByUser_UserId(Integer userId);
+
+    List<Staff> findByIsActiveTrueAndIsAvailableForConsultationTrue();
 }

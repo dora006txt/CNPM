@@ -9,4 +9,6 @@ public interface OrderService {
     List<OrderResponseDTO> findOrdersByUserId(Integer userId);
     OrderResponseDTO findOrderById(Integer orderId, Integer userId);
     OrderResponseDTO cancelOrder(Integer orderId, Integer userId);
+    List<OrderResponseDTO> getAllOrdersForAdmin();
+    OrderResponseDTO updateOrderStatusByAdmin(Integer orderId, String newStatusName);
 }

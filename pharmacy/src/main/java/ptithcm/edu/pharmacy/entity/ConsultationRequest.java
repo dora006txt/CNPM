@@ -33,7 +33,7 @@ public class ConsultationRequest {
     private String userMessage;
 
     @Enumerated(EnumType.STRING)
-    private ConsultationRequestStatus status = ConsultationRequestStatus.PENDING;
+    private ConsultationRequestStatus status = ConsultationRequestStatus.pending;
 
     @ManyToOne
     @JoinColumn(name = "assigned_staff_id")

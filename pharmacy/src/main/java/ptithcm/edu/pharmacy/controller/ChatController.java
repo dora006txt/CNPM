@@ -3,11 +3,18 @@ package ptithcm.edu.pharmacy.controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.server.ResponseStatusException;
 import ptithcm.edu.pharmacy.dto.ChatMessageDTO;
 import ptithcm.edu.pharmacy.dto.MessageDTO; // Thêm import này
 import ptithcm.edu.pharmacy.entity.ConsultationRequest;
@@ -19,6 +26,8 @@ import ptithcm.edu.pharmacy.service.MessageService;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 public class ChatController {
@@ -43,18 +52,23 @@ public class ChatController {
             Principal principal) {
 
         if (principal == null) {
-            logger.error("sendMessage: User not authenticated for sending message to consultation: {}", consultationRequestId);
+            logger.error("sendMessage: User not authenticated for sending message to consultation: {}",
+                    consultationRequestId);
             return;
         }
         logger.info("sendMessage: Authenticated user principal name: {}", principal.getName());
 
-        // Giả định principal.getName() trả về số điện thoại hoặc một định danh duy nhất mà findByPhoneNumber có thể sử dụng.
-        // Nếu principal.getName() trả về một thứ khác (ví dụ: ID người dùng dưới dạng chuỗi), bạn cần thay đổi phương thức truy vấn cho phù hợp.
+        // Giả định principal.getName() trả về số điện thoại hoặc một định danh duy nhất
+        // mà findByPhoneNumber có thể sử dụng.
+        // Nếu principal.getName() trả về một thứ khác (ví dụ: ID người dùng dưới dạng
+        // chuỗi), bạn cần thay đổi phương thức truy vấn cho phù hợp.
         User sender = userRepository.findByPhoneNumber(principal.getName())
                 .orElse(null);
 
         if (sender == null) {
-            logger.error("sendMessage: Sender not found for principal name: {}. Ensure principal.getName() is the correct identifier (e.g., phone number) and the user exists.", principal.getName());
+            logger.error(
+                    "sendMessage: Sender not found for principal name: {}. Ensure principal.getName() is the correct identifier (e.g., phone number) and the user exists.",
+                    principal.getName());
             return;
         }
 
@@ -65,44 +79,47 @@ public class ChatController {
             logger.error("sendMessage: ConsultationRequest not found for ID: {}", consultationRequestId);
             return;
         }
-        logger.info("sendMessage: Processing message for ConsultationRequest ID: {}, Sender ID: {}", consultationRequest.getRequestId(), sender.getUserId());
+        logger.info("sendMessage: Processing message for ConsultationRequest ID: {}, Sender ID: {}",
+                consultationRequest.getRequestId(), sender.getUserId());
 
         User receiver = null;
-        // Nếu người gửi là user của consultation request, thì người nhận là assigned staff
+        // Nếu người gửi là user của consultation request, thì người nhận là assigned
+        // staff
         if (consultationRequest.getUser().getUserId().equals(sender.getUserId())) {
             logger.info("sendMessage: Sender (ID: {}) is the consultation request user.", sender.getUserId());
             if (consultationRequest.getAssignedStaff() == null) {
-                logger.error("sendMessage: Consultation request {} has no assigned staff. Cannot determine receiver.", consultationRequestId);
+                logger.error("sendMessage: Consultation request {} has no assigned staff. Cannot determine receiver.",
+                        consultationRequestId);
                 return;
             }
             if (consultationRequest.getAssignedStaff().getUser() == null) {
-                logger.error("sendMessage: Assigned staff for consultation {} (Staff ID: {}) has no associated user account. Cannot determine receiver.",
+                logger.error(
+                        "sendMessage: Assigned staff for consultation {} (Staff ID: {}) has no associated user account. Cannot determine receiver.",
                         consultationRequestId, consultationRequest.getAssignedStaff().getStaffId());
                 return;
             }
             receiver = consultationRequest.getAssignedStaff().getUser();
             logger.info("sendMessage: Receiver determined as assigned staff (User ID: {}).", receiver.getUserId());
         }
-        // Nếu người gửi là assigned staff, thì người nhận là user của consultation request
+        // Nếu người gửi là assigned staff, thì người nhận là user của consultation
+        // request
         else if (consultationRequest.getAssignedStaff() != null &&
-                 consultationRequest.getAssignedStaff().getUser() != null &&
-                 consultationRequest.getAssignedStaff().getUser().getUserId().equals(sender.getUserId())) {
+                consultationRequest.getAssignedStaff().getUser() != null &&
+                consultationRequest.getAssignedStaff().getUser().getUserId().equals(sender.getUserId())) {
             logger.info("sendMessage: Sender (ID: {}) is the assigned staff.", sender.getUserId());
             receiver = consultationRequest.getUser();
-            logger.info("sendMessage: Receiver determined as consultation request user (User ID: {}).", receiver.getUserId());
+            logger.info("sendMessage: Receiver determined as consultation request user (User ID: {}).",
+                    receiver.getUserId());
         } else {
-            logger.error("sendMessage: Sender (ID: {}) is not part of the consultation (ID: {}). Request User ID: {}, Assigned Staff User ID: {}",
+            logger.error(
+                    "sendMessage: Sender (ID: {}) is not part of the consultation (ID: {}). Request User ID: {}, Assigned Staff User ID: {}",
                     sender.getUserId(),
                     consultationRequestId,
                     consultationRequest.getUser().getUserId(),
-                    (consultationRequest.getAssignedStaff() != null && consultationRequest.getAssignedStaff().getUser() != null) ?
-                            consultationRequest.getAssignedStaff().getUser().getUserId() : "N/A or No User Account for Staff");
-            return;
-        }
-
-        if (receiver == null) {
-            // This case should ideally be caught by the logic above.
-            logger.error("sendMessage: Receiver could not be determined for consultation: {}. This indicates a potential logic flaw or unexpected data state.", consultationRequestId);
+                    (consultationRequest.getAssignedStaff() != null
+                            && consultationRequest.getAssignedStaff().getUser() != null)
+                                    ? consultationRequest.getAssignedStaff().getUser().getUserId()
+                                    : "N/A or No User Account for Staff");
             return;
         }
 
@@ -120,23 +137,69 @@ public class ChatController {
         MessageDTO messageDTO = new MessageDTO(savedMessage);
 
         // Gửi tin nhắn DTO đến client đã gửi (hoặc một topic cụ thể nếu cần)
-        // String userSpecificDestination = "/queue/reply-" + principal.getName(); // Ví dụ nếu muốn gửi lại cho người gửi
+        // String userSpecificDestination = "/queue/reply-" + principal.getName(); // Ví
+        // dụ nếu muốn gửi lại cho người gửi
         // messagingTemplate.convertAndSend(userSpecificDestination, messageDTO);
 
         // Gửi tin nhắn DTO đến topic chung của cuộc tư vấn
         String destinationTopic = "/topic/consultation/" + consultationRequestId;
         logger.info("sendMessage: Sending DTO message to topic: {}", destinationTopic);
-        messagingTemplate.convertAndSend(destinationTopic, messageDTO); // Sửa: simpMessagingTemplate -> messagingTemplate, destination -> destinationTopic, savedMessage -> messageDTO
+        messagingTemplate.convertAndSend(destinationTopic, messageDTO); // Sửa: simpMessagingTemplate ->
+                                                                        // messagingTemplate, destination ->
+                                                                        // destinationTopic, savedMessage -> messageDTO
 
         logger.info("sendMessage: Message DTO sent to topic: {}", destinationTopic);
         logger.info("sendMessage: Message saved with ID: {}", savedMessage.getMessageId());
 
-        // Dòng messagingTemplate.convertAndSend(destinationTopic, savedMessage); ở dưới có thể bị dư thừa
-        // nếu bạn đã gửi messageDTO đến cùng topic.
-        // Nếu bạn muốn gửi cả entity và DTO (không khuyến khích), thì giữ lại.
-        // Nếu chỉ cần gửi DTO, dòng dưới có thể xóa.
-        // logger.info("sendMessage: Sending message to topic: {}", destinationTopic);
-        // messagingTemplate.convertAndSend(destinationTopic, savedMessage); // Xem xét có cần thiết không
-        // logger.info("sendMessage: Message successfully sent to topic: {}", destinationTopic);
+    }
+
+    @GetMapping("/api/chat/history/{consultationRequestId}")
+    public ResponseEntity<List<MessageDTO>> getChatHistory(
+            @PathVariable Integer consultationRequestId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        if (userDetails == null) {
+            logger.warn("getChatHistory: User not authenticated for consultation ID: {}", consultationRequestId);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        User currentUser = userRepository.findByPhoneNumber(userDetails.getUsername())
+                .orElseThrow(() -> {
+                    logger.error("getChatHistory: Authenticated user not found in database: {}",
+                            userDetails.getUsername());
+                    return new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found");
+                });
+
+        ConsultationRequest consultationRequest = consultationRequestRepository.findById(consultationRequestId)
+                .orElseThrow(() -> {
+                    logger.warn("getChatHistory: ConsultationRequest not found for ID: {}", consultationRequestId);
+                    return new ResponseStatusException(HttpStatus.NOT_FOUND, "Consultation request not found");
+                });
+
+        // Authorization check
+        boolean isUserInvolved = consultationRequest.getUser().getUserId().equals(currentUser.getUserId());
+        boolean isStaffInvolved = false;
+        if (consultationRequest.getAssignedStaff() != null
+                && consultationRequest.getAssignedStaff().getUser() != null) {
+            isStaffInvolved = consultationRequest.getAssignedStaff().getUser().getUserId()
+                    .equals(currentUser.getUserId());
+        }
+        boolean isAdmin = userDetails.getAuthorities().stream()
+                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ADMIN"));
+
+        if (!isUserInvolved && !isStaffInvolved && !isAdmin) {
+            logger.warn("getChatHistory: User {} not authorized to access history for consultation ID: {}",
+                    currentUser.getUserId(), consultationRequestId);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        List<Message> messages = messageService.getMessagesByConsultationRequestId(consultationRequestId);
+        List<MessageDTO> messageDTOs = messages.stream()
+                .map(MessageDTO::new)
+                .collect(Collectors.toList());
+
+        logger.info("getChatHistory: Successfully retrieved {} messages for consultation ID: {}", messageDTOs.size(),
+                consultationRequestId);
+        return ResponseEntity.ok(messageDTOs);
     }
 }

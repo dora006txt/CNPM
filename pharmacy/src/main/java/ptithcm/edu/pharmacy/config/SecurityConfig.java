@@ -13,7 +13,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -69,7 +68,6 @@ public class SecurityConfig {
                                 "/api/auth/register",
                                 "/api/auth/forgot-password"
                         ).permitAll()
-                        // Add a new rule specifically for /ws/** to permit all methods
                         .requestMatchers("/ws/**").permitAll()
 
                         // --- Branch Management (Admin) ---
@@ -135,6 +133,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/users/**").hasAuthority("ADMIN")
 
                         // Secure all other requests
+                        .requestMatchers(HttpMethod.GET, "/api/chat/history/**").authenticated() // Thêm dòng này
                         .anyRequest().authenticated()
                 ) // Closes authorizeHttpRequests lambda
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

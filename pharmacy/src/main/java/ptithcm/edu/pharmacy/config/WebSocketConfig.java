@@ -39,7 +39,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void configureMessageBroker(MessageBrokerRegistry config) {
         // Prefix cho các topic mà client sẽ subscribe để nhận message từ server
         // Ví dụ: /topic/consultation/123
-        config.enableSimpleBroker("/topic"); 
+        config.enableSimpleBroker("/topic");
         // Prefix cho các destination mà client sẽ gửi message đến server
         // Ví dụ: /app/chat.sendMessage
         config.setApplicationDestinationPrefixes("/app");
@@ -48,9 +48,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         // Endpoint mà client sẽ kết nối WebSocket đến
-        // "/ws" là endpoint, withSockJS() để hỗ trợ fallback nếu trình duyệt không hỗ trợ WebSocket thuần
+        // "/ws" là endpoint, withSockJS() để hỗ trợ fallback nếu trình duyệt không hỗ
+        // trợ WebSocket thuần
         registry.addEndpoint("/ws")
-                .setAllowedOriginPatterns("*") 
+                .setAllowedOriginPatterns("http://localhost:5173")
                 .withSockJS();
     }
 
@@ -59,8 +60,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registration.interceptors(new ChannelInterceptor() {
             @Override
             public Message<?> preSend(Message<?> message, MessageChannel channel) {
-                StompHeaderAccessor accessor =
-                        MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
+                StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
                 if (accessor != null) {
                     StompCommand command = accessor.getCommand();
                     logger.info("STOMP Command: {}", command);
@@ -76,22 +76,29 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                                 String jwt = authHeader.substring(7);
                                 try {
                                     if (jwtUtils.validateJwtToken(jwt)) { // Sử dụng jwtUtils
-                                        String username = jwtUtils.getPhoneNumberFromJwtToken(jwt); // Sử dụng jwtUtils và giả định phương thức này trả về username/phonenumber
+                                        String username = jwtUtils.getPhoneNumberFromJwtToken(jwt); // Sử dụng jwtUtils
+                                                                                                    // và giả định
+                                                                                                    // phương thức này
+                                                                                                    // trả về
+                                                                                                    // username/phonenumber
                                         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                                        UsernamePasswordAuthenticationToken authentication =
-                                                new UsernamePasswordAuthenticationToken(
-                                                        userDetails, null, userDetails.getAuthorities());
-                                        
+                                        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                                                userDetails, null, userDetails.getAuthorities());
+
                                         accessor.setUser(authentication);
                                         logger.info("STOMP Connect: User {} authenticated successfully.", username);
                                     } else {
-                                        logger.warn("STOMP Connect: Invalid JWT token after trim. Original header: '{}', Trimmed: '{}'", authHeaderRaw, authHeader);
+                                        logger.warn(
+                                                "STOMP Connect: Invalid JWT token after trim. Original header: '{}', Trimmed: '{}'",
+                                                authHeaderRaw, authHeader);
                                     }
                                 } catch (Exception e) {
                                     logger.error("STOMP Connect: JWT token processing error: {}", e.getMessage(), e);
                                 }
                             } else {
-                                logger.warn("STOMP Connect: Authorization token does not start with Bearer after trim. Original header: '{}', Trimmed: '{}'", authHeaderRaw, authHeader);
+                                logger.warn(
+                                        "STOMP Connect: Authorization token does not start with Bearer after trim. Original header: '{}', Trimmed: '{}'",
+                                        authHeaderRaw, authHeader);
                             }
                         } else {
                             logger.warn("STOMP Connect: No Authorization header found.");
